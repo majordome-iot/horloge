@@ -18,7 +18,7 @@ func main() {
 	go func() {
 		time.Sleep(8 * time.Second)
 		fmt.Println("Cancel bro")
-		runner.Remove(job)
+		runner.RemoveJob(job)
 	}()
 
 	// job := horloge.CreateJob("foo", "@every 1 second")

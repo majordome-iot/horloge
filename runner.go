@@ -1,6 +1,7 @@
 package horloge
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -22,14 +23,23 @@ func NewRunner() Runner {
 	return r
 }
 
-func (r *Runner) AddJob(job *Job) {
+func (r *Runner) AddJob(job *Job) error {
 	nexts := job.Calendar()
+
+	_, ok := r.jobs[job.Name]
+
+	if ok {
+		return errors.New(
+			fmt.Sprintf("[ERROR] Cannot add task \"%s\", another task with the same name exists", job.Name))
+	}
 
 	for i, n := range nexts {
 		go r.Schedule(job, n, i)
 	}
 
 	r.jobs[job.Name] = job
+
+	return nil
 }
 
 func (r *Runner) AddHandler(name string, f func(name string, args []string, t time.Time)) {
@@ -70,11 +80,12 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 	wg.Wait()
 }
 
-func (r *Runner) Remove(job *Job) {
+func (r *Runner) RemoveJob(job *Job) {
 	j, ok := r.jobs[job.Name]
 
 	if ok {
 		fmt.Printf("[INFO] Canceling job \"%s\"", job.Name)
 		j.Cancel()
+		delete(r.jobs, job.Name)
 	}
 }

@@ -3,7 +3,7 @@
 [X] Handle cancel
 [X] Unregister should cancel jobs
 [X] Clarify task vs job
-[ ] Disallow adding two jobs with the same name
+[X] Disallow adding two jobs with the same name
 [ ] Implement parser
 [ ] Use switch for parser
 [ ] @monthly with no month == every month
