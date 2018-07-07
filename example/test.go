@@ -10,9 +10,10 @@ import (
 func main() {
 	runner := horloge.NewRunner()
 
-	task := horloge.NewTask("foobar", "foo", "bar")
 	pattern := horloge.Pattern{Occurence: "every", Second: 5}
-	job := runner.AddTask(task, pattern)
+	job := horloge.NewJob("foobar", pattern, "foo", "bar")
+
+	runner.AddJob(job)
 
 	go func() {
 		time.Sleep(8 * time.Second)

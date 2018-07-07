@@ -22,17 +22,14 @@ func NewRunner() Runner {
 	return r
 }
 
-func (r *Runner) AddTask(task *Task, pattern Pattern) *Job {
-	j := NewJob(task, pattern)
-	nexts := j.Calendar()
+func (r *Runner) AddJob(job *Job) {
+	nexts := job.Calendar()
 
 	for i, n := range nexts {
-		go r.Schedule(j, n, i)
+		go r.Schedule(job, n, i)
 	}
 
-	r.jobs[task.Name] = j
-
-	return j
+	r.jobs[job.Name] = job
 }
 
 func (r *Runner) AddHandler(name string, f func(name string, args []string, t time.Time)) {
@@ -40,8 +37,8 @@ func (r *Runner) AddHandler(name string, f func(name string, args []string, t ti
 }
 
 func (r *Runner) Execute(j *Job, t time.Time) {
-	name := j.task.Name
-	args := j.task.Args
+	name := j.Name
+	args := j.Args
 	handler, ok := r.handlers[name]
 
 	if ok {
@@ -52,7 +49,7 @@ func (r *Runner) Execute(j *Job, t time.Time) {
 }
 
 func (r *Runner) Schedule(j *Job, n time.Time, index int) {
-	fmt.Printf("[INFO] Scheduling task \"%s\" at %s\n", j.task.Name, n.String())
+	fmt.Printf("[INFO] Scheduling task \"%s\" at %s\n", j.Name, n.String())
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
@@ -68,19 +65,16 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 			go r.Schedule(j, next, index)
 
 		}
-
 		wg.Done()
 	}
-
 	wg.Wait()
 }
 
 func (r *Runner) Remove(job *Job) {
-	name := job.task.Name
-	j, ok := r.jobs[name]
+	j, ok := r.jobs[job.Name]
 
 	if ok {
-		fmt.Printf("[INFO] Canceling job \"%s\"", name)
+		fmt.Printf("[INFO] Canceling job \"%s\"", job.Name)
 		j.Cancel()
 	}
 }
