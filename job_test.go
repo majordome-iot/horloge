@@ -1,59 +1,20 @@
 package horloge
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
 
-func TestPatternTime(t *testing.T) {
-	p := Pattern{}
+func TestBind(t *testing.T) {
+	job := NewJob("Run outside", Pattern{})
+	job.Bind([]string{"in", "the", "rain"})
 
-	if p.Time().IsZero() {
-		t.Errorf("expected p.Time() not to return a zeroed time")
-	}
-}
+	actual := job.Args
+	expected := []string{"in", "the", "rain"}
 
-func TestDiffToUpcomingDay(t *testing.T) {
-	then := time.Date(2015, time.October, 21, 0, 0, 0, 0, time.UTC) // This is a Wednesday
-
-	expected := 2
-	actual := DiffToWeekday(then, time.Friday)
-
-	if expected != actual {
-		t.Errorf("expected %d to be %d", expected, actual)
-	}
-}
-
-func TestDiffToPastDay(t *testing.T) {
-	then := time.Date(2015, time.October, 21, 0, 0, 0, 0, time.UTC) // This is a Wednesday
-
-	expected := 5
-	actual := DiffToWeekday(then, time.Monday)
-
-	if expected != actual {
-		t.Errorf("expected %d to be %d", expected, actual)
-	}
-}
-
-func TestDiffToUpcomingMonth(t *testing.T) {
-	then := time.Date(2015, time.October, 21, 0, 0, 0, 0, time.UTC)
-
-	expected := 2
-	actual := DiffToMonth(then, time.December)
-
-	if expected != actual {
-		t.Errorf("expected %d to be %d", expected, actual)
-	}
-}
-
-func TestDiffToPastMonth(t *testing.T) {
-	then := time.Date(2015, time.October, 21, 0, 0, 0, 0, time.UTC)
-
-	expected := 3
-	actual := DiffToMonth(then, time.January)
-
-	if expected != actual {
-		t.Errorf("expected %d to be %d", expected, actual)
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected handler to be called with args %v, but got %v", expected, actual)
 	}
 }
 

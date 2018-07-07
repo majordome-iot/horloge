@@ -25,6 +25,10 @@ func NewJob(name string, pattern Pattern, args ...[]string) *Job {
 	}
 }
 
+func (j *Job) Bind(args []string) {
+	j.Args = args
+}
+
 func (j *Job) Repeat() []time.Time {
 	var time []time.Time
 	p := j.Pattern

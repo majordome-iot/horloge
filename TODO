@@ -4,7 +4,7 @@
 [X] Unregister should cancel jobs
 [X] Clarify task vs job
 [X] Disallow adding two jobs with the same name
-[ ] Implement job.Bind()
+[X] Implement job.Bind()
 [ ] Implement parser
 [ ] Use switch for parser
 [ ] Define consts for day, week, etc..

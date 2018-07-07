@@ -66,7 +66,7 @@ func TestExecuteJob(t *testing.T) {
 	runner.Execute(job, now)
 
 	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf("expected runner to be called with args %v, but got %v", expected, actual)
+		t.Errorf("expected handler to be called with args %v, but got %v", expected, actual)
 	}
 }
 
