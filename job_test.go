@@ -60,7 +60,7 @@ func TestDiffToPastMonth(t *testing.T) {
 func TestEvery(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 15, 0, 0, 0, time.UTC)
 	p := Pattern{Occurence: "every", Hour: 1, Minute: 30, Now: then}
-	job := NewJob("Bat eyes", p, "left", "right")
+	job := NewJob("Bat eyes", p)
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -74,7 +74,7 @@ func TestEvery(t *testing.T) {
 func TestDailyPassedTime(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 15, 0, 0, 0, time.UTC)
 	p := Pattern{Occurence: "daily", Hour: 9, Minute: 30, Second: 0, Now: then}
-	job := NewJob("Breakfast", p, "croissant", "oj")
+	job := NewJob("Breakfast", p)
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -88,7 +88,7 @@ func TestDailyPassedTime(t *testing.T) {
 func TestDailyFutureTime(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 7, 30, 0, 0, time.UTC)
 	p := Pattern{Occurence: "daily", Hour: 9, Minute: 30, Second: 0, Now: then}
-	job := NewJob("Breakfast", p, "croissant", "oj")
+	job := NewJob("Breakfast", p)
 
 	result := job.Repeat()
 	actual := result[0].String()

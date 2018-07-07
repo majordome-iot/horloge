@@ -11,10 +11,16 @@ type Job struct {
 	tickers []*time.Ticker
 }
 
-func NewJob(name string, pattern Pattern, args ...string) *Job {
+func NewJob(name string, pattern Pattern, args ...[]string) *Job {
+	var arguments []string
+
+	if len(args) > 0 {
+		arguments = args[0]
+	}
+
 	return &Job{
 		Name:    name,
-		Args:    args,
+		Args:    arguments,
 		Pattern: pattern,
 	}
 }

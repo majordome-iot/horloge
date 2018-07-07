@@ -71,6 +71,7 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 	case t := <-ticker.C:
 		r.Execute(j, t)
 		next := j.Calendar()[index]
+		// TODO: This is a bug in the making
 		if len(r.jobs) > 0 {
 			go r.Schedule(j, next, index)
 

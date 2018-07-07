@@ -1,6 +1,7 @@
 package horloge
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -24,9 +25,7 @@ func TestAddJob(t *testing.T) {
 
 func TestRemoveJob(t *testing.T) {
 	runner := NewRunner()
-
-	pattern := Pattern{}
-	job := NewJob("foobar", pattern)
+	job := NewJob("foobar", Pattern{})
 
 	err := runner.AddJob(job)
 	if err != nil {
@@ -42,22 +41,21 @@ func TestRemoveJob(t *testing.T) {
 }
 
 func TestExecuteJob(t *testing.T) {
-	called := false
-	now := time.Now()
+	var actual []string
+	expected := []string{"foo", "bar"}
 
+	now := time.Now()
 	runner := NewRunner()
-	pattern := Pattern{}
-	job := NewJob("foobar", pattern)
+	job := NewJob("foobar", Pattern{}, expected)
 
 	runner.AddJob(job)
 	runner.AddHandler("foobar", func(name string, args []string, t time.Time) {
-		called = true
+		actual = args
 	})
-
 	runner.Execute(job, now)
 
-	if !called {
-		t.Errorf("expected runner to call handler")
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected runner to be called with args %v, but got %v", expected, actual)
 	}
 }
 

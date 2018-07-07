@@ -6,8 +6,9 @@
 [X] Disallow adding two jobs with the same name
 [ ] Implement parser
 [ ] Use switch for parser
+[ ] Define consts for day, week, etc..
+[ ] Implement server
 [ ] @monthly with no month == every month
 [ ] @weekly with no day == every sunday
-[ ] Define consts for day, week, etc..
 [ ] Serialize / Unserialize runner
 [ ] Allow multiple job handlers

@@ -11,7 +11,7 @@ func main() {
 	runner := horloge.NewRunner()
 
 	pattern := horloge.Pattern{Occurence: "every", Second: 5}
-	job := horloge.NewJob("foobar", pattern, "foo", "bar")
+	job := horloge.NewJob("foobar", pattern, []string{"foo", "bar"})
 
 	runner.AddJob(job)
 
@@ -22,7 +22,7 @@ func main() {
 	}()
 
 	// job := horloge.CreateJob("foo", "@every 1 second")
-	// job.Bind([string]{"foo", "bar"})
+	// job.Bind([]string{"foo", "bar"})
 	// runner.AddJob(job)
 
 	runner.AddHandler("foobar", func(name string, args []string, t time.Time) {
