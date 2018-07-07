@@ -9,9 +9,8 @@ import (
 
 func main() {
 	runner := horloge.NewRunner()
-
-	pattern := horloge.Pattern{Occurence: "every", Second: 5}
-	job := horloge.NewJob("foobar", pattern, []string{"foo", "bar"})
+	pattern := horloge.NewPattern("daily").At(15, 30, 0)
+	job := horloge.NewJob("foobar", *pattern)
 
 	runner.AddJob(job)
 
@@ -20,10 +19,6 @@ func main() {
 		fmt.Println("Cancel bro")
 		runner.RemoveJob(job)
 	}()
-
-	// job := horloge.CreateJob("foo", "@every 1 second")
-	// job.Bind([]string{"foo", "bar"})
-	// runner.AddJob(job)
 
 	runner.AddHandler("foobar", func(name string, args []string, t time.Time) {
 		fmt.Printf("[INFO] Running \"%s\" with args %+v at %s\n", name, args, t.String())

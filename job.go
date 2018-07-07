@@ -32,17 +32,17 @@ func (j *Job) Bind(args []string) {
 func (j *Job) Repeat() []time.Time {
 	var time []time.Time
 	p := j.Pattern
-	occurence := p.Occurence
 
-	if occurence == "every" {
+	switch occurence := p.Occurence; occurence {
+	case "every":
 		time = j.every(p)
-	} else if occurence == "yearly" {
+	case "yearly":
 		time = j.yearly(p)
-	} else if occurence == "monthly" {
+	case "monthly":
 		time = j.monthly(p)
-	} else if occurence == "weekly" {
+	case "weekly":
 		time = j.weekly(p)
-	} else if occurence == "daily" {
+	case "daily":
 		time = j.daily(p)
 	}
 
@@ -66,7 +66,7 @@ func (j *Job) Calendar() []time.Time {
 func (j *Job) every(p Pattern) []time.Time {
 
 	return []time.Time{
-		alignDateTime(p.Time(), p),
+		p.alignDateTime(p.Time()),
 	}
 }
 
@@ -75,12 +75,12 @@ func (j *Job) daily(p Pattern) []time.Time {
 	midnight := Bod(now)
 	tomorrowMidnight := Bod(tomorrow(now))
 
-	next := alignClock(midnight, p)
+	next := p.alignClock(midnight)
 
 	// Execution time has already passed for today
 	// We scheduled it to the next day
 	if next.Before(now) {
-		next = alignClock(tomorrowMidnight, p)
+		next = p.alignClock(tomorrowMidnight)
 	}
 
 	return []time.Time{
@@ -91,7 +91,7 @@ func (j *Job) daily(p Pattern) []time.Time {
 func (j *Job) weekly(p Pattern) []time.Time {
 	now := p.Time()
 	midnight := Bod(now)
-	next := alignClock(midnight, p)
+	next := p.alignClock(midnight)
 
 	nexts := make([]time.Time, len(p.Days))
 
@@ -102,7 +102,7 @@ func (j *Job) weekly(p Pattern) []time.Time {
 			daysDiff = 0
 		}
 		nextExecutionDate := midnight.AddDate(0, 0, daysDiff)
-		nexts[i] = alignClock(nextExecutionDate, p)
+		nexts[i] = p.alignClock(nextExecutionDate)
 	}
 
 	return nexts
@@ -111,7 +111,7 @@ func (j *Job) weekly(p Pattern) []time.Time {
 func (j *Job) monthly(p Pattern) []time.Time {
 	now := p.Time()
 	firstDayOfTheMonth := Bom(now)
-	next := alignDateTime(firstDayOfTheMonth, p)
+	next := p.alignDateTime(firstDayOfTheMonth)
 	nexts := make([]time.Time, len(p.Months))
 
 	days := p.Day
@@ -128,7 +128,7 @@ func (j *Job) monthly(p Pattern) []time.Time {
 		}
 
 		nextExecutionDate := firstDayOfTheMonth.AddDate(0, monthsDiff, days)
-		nexts[i] = alignClock(nextExecutionDate, p)
+		nexts[i] = p.alignClock(nextExecutionDate)
 	}
 
 	return nexts
@@ -137,7 +137,7 @@ func (j *Job) monthly(p Pattern) []time.Time {
 func (j *Job) yearly(p Pattern) []time.Time {
 	now := p.Time()
 	firstDayOfTheYear := Boy(now)
-	next := alignDateTime(firstDayOfTheYear, p)
+	next := p.alignDateTime(firstDayOfTheYear)
 
 	days := p.Day
 	if days > 0 {
@@ -156,22 +156,10 @@ func (j *Job) yearly(p Pattern) []time.Time {
 
 	nextExecutionDate := firstDayOfTheYear.AddDate(year, months, days)
 	return []time.Time{
-		alignClock(nextExecutionDate, p),
+		p.alignClock(nextExecutionDate),
 	}
 }
 
 func tomorrow(t time.Time) time.Time {
 	return t.AddDate(0, 0, 1)
-}
-
-func alignClock(t time.Time, p Pattern) time.Time {
-	h := time.Hour * time.Duration(p.Hour)
-	m := time.Minute * time.Duration(p.Minute)
-	s := time.Second * time.Duration(p.Second)
-
-	return t.Add(h).Add(m).Add(s)
-}
-
-func alignDateTime(t time.Time, p Pattern) time.Time {
-	return alignClock(t, p).AddDate(p.Year, p.Month, p.Day)
 }

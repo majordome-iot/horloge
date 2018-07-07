@@ -5,11 +5,12 @@
 [X] Clarify task vs job
 [X] Disallow adding two jobs with the same name
 [X] Implement job.Bind()
-[ ] Implement parser
-[ ] Use switch for parser
-[ ] Define consts for day, week, etc..
+[X] Use switch for parser
 [ ] Implement server
+[ ] Cahnge Pattern.Days to Pattern.Weekdays
+[ ] Change name Pattern to something else
+[ ] Replace AddJob with Add and Remove with Cancel
+[ ] Allow multiple job handlers
 [ ] @monthly with no month == every month
 [ ] @weekly with no day == every sunday
 [ ] Serialize / Unserialize runner
-[ ] Allow multiple job handlers
