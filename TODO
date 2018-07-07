@@ -1,11 +1,12 @@
 [X] Handle @every
-[ ] Store jobs in a map with task name
+[x] Store jobs in a map with task name
 [ ] Disallow adding two jobs with the same name
 [X] Handle cancel
+[X] Unregister should cancel jobs
 [ ] Clarify task vs job
 [ ] Implement parser
 [ ] Use switch for parser
-[ ] Unregister should cancel jobs
 [ ] @monthly with no month == every month
 [ ] @weekly with no day == every sunday
 [ ] Define consts for day, week, etc..
+[ ] Serialize / Unserialize runner

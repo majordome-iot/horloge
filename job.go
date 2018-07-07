@@ -26,5 +26,9 @@ func (j *Job) Cancel() {
 func (j *Job) Calendar() []time.Time {
 	task := j.task
 	pattern := j.pattern
-	return task.Repeat(pattern)
+	nexts := task.Repeat(pattern)
+
+	j.tickers = make([]*time.Ticker, len(nexts))
+
+	return nexts
 }

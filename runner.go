@@ -9,12 +9,13 @@ import (
 type TaskHandler func(name string, args []string, t time.Time)
 
 type Runner struct {
-	jobs     []*Job
+	jobs     map[string]*Job
 	handlers map[string]TaskHandler
 }
 
 func NewRunner() Runner {
 	r := Runner{
+		jobs:     make(map[string]*Job),
 		handlers: make(map[string]TaskHandler),
 	}
 
@@ -23,16 +24,13 @@ func NewRunner() Runner {
 
 func (r *Runner) AddTask(task *Task, pattern Pattern) *Job {
 	j := NewJob(task, pattern)
-
 	nexts := j.Calendar()
-	// TODO: Do this automatically
-	j.tickers = make([]*time.Ticker, len(nexts))
 
 	for i, n := range nexts {
 		go r.Schedule(j, n, i)
 	}
 
-	r.jobs = append(r.jobs, j)
+	r.jobs[task.Name] = j
 
 	return j
 }
@@ -78,18 +76,11 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 }
 
 func (r *Runner) Remove(job *Job) {
-	for i, j := range r.jobs {
-		if job.task.Name == j.task.Name {
-			j.Cancel()
-			r.jobs = removeElement(r.jobs, i)
-		}
+	name := job.task.Name
+	j, ok := r.jobs[name]
+
+	if ok {
+		fmt.Printf("[INFO] Canceling job \"%s\"", name)
+		j.Cancel()
 	}
-}
-
-func removeElement(a []*Job, i int) []*Job {
-	a[i] = a[len(a)-1]
-	a[len(a)-1] = nil
-	a = a[:len(a)-1]
-
-	return a
 }

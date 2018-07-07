@@ -16,6 +16,7 @@ func main() {
 
 	go func() {
 		time.Sleep(8 * time.Second)
+		fmt.Println("Cancel bro")
 		runner.Remove(job)
 	}()
 
