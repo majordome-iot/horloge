@@ -14,12 +14,23 @@ func TestAddJob(t *testing.T) {
 
 	err := runner.AddJob(job)
 	if err != nil {
-		t.Errorf("expected runner not to return an error")
+		t.Errorf("expected runner not to return an error when adding a job")
 	}
 
 	err = runner.AddJob(job)
 	if err == nil {
-		t.Errorf("expected runner to return an error")
+		t.Errorf("expected runner to return an error when adding a job with the same name")
+	}
+}
+
+func TestHasJob(t *testing.T) {
+	runner := NewRunner()
+	job := NewJob("foobar", Pattern{})
+	runner.AddJob(job)
+	actual := runner.HasJob(job)
+
+	if !actual {
+		t.Errorf("expected HasJob to return true, but got %v", actual)
 	}
 }
 

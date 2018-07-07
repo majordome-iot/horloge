@@ -26,9 +26,7 @@ func NewRunner() Runner {
 func (r *Runner) AddJob(job *Job) error {
 	nexts := job.Calendar()
 
-	_, ok := r.jobs[job.Name]
-
-	if ok {
+	if r.HasJob(job) {
 		return errors.New(
 			fmt.Sprintf("[ERROR] Cannot add task \"%s\", another task with the same name exists", job.Name))
 	}
@@ -71,8 +69,7 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 	case t := <-ticker.C:
 		r.Execute(j, t)
 		next := j.Calendar()[index]
-		// TODO: This is a bug in the making
-		if len(r.jobs) > 0 {
+		if r.HasJob(j) {
 			go r.Schedule(j, next, index)
 
 		}
@@ -81,12 +78,16 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 	wg.Wait()
 }
 
-func (r *Runner) RemoveJob(job *Job) {
-	j, ok := r.jobs[job.Name]
+func (r *Runner) HasJob(job *Job) bool {
+	_, ok := r.jobs[job.Name]
 
-	if ok {
+	return ok
+}
+
+func (r *Runner) RemoveJob(job *Job) {
+	if r.HasJob(job) {
 		fmt.Printf("[INFO] Canceling job \"%s\"", job.Name)
-		j.Cancel()
+		job.Cancel()
 		delete(r.jobs, job.Name)
 	}
 }
