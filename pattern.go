@@ -6,15 +6,15 @@ import (
 )
 
 type Pattern struct {
+	Second    int    `json:"second" form:"second" query:"second"`
+	Minute    int    `json:"minute" form:"minute" query:"minute"`
+	Hour      int    `json:"hour" form:"hour" query:"hour"`
+	Day       int    `json:"day" form:"day" query:"day"`
+	Month     int    `json:"month" form:"month" query:"month"`
+	Year      int    `json:"year" form:"year" query:"year"`
+	Occurence string `json:"occurence" form:"occurence" query:"occurence"`
 	Days      []time.Weekday
 	Months    []time.Month
-	Second    int
-	Minute    int
-	Hour      int
-	Day       int
-	Month     int
-	Year      int
-	Occurence string
 	Now       time.Time
 }
 
