@@ -1,21 +1,10 @@
-[X] Handle @every
-[x] Store jobs in a map with task name
-[X] Handle cancel
-[X] Unregister should cancel jobs
-[X] Clarify task vs job
-[X] Disallow adding two jobs with the same name
-[X] Implement job.Bind()
-[X] Use switch for parser
-[x] Implement server
-[x] Implement client
-
-[ ] Documentation
-[ ] Go doc generation
-[ ] Proper packaing
-[ ] Change Pattern.Days to Pattern.Weekdays
-[ ] Change name Pattern to something else
-[ ] Replace AddJob with Add and Remove with Cancel
-[ ] Allow multiple job handlers
-[ ] @monthly with no month == every month
-[ ] @weekly with no day == every sunday
-[ ] Serialize / Unserialize runner and active jobs
+- [ ] Documentation
+- [ ] Command line options
+- [ ] Config file 
+- [ ] Change Pattern.Days to Pattern.Weekdays
+- [ ] Change name Pattern to something else
+- [ ] Replace AddJob with Add and Remove with Cancel
+- [ ] Allow multiple job handlers
+- [ ] @monthly with no month == every month
+- [ ] @weekly with no day == every sunday
+- [ ] Serialize / Unserialize runner and active jobs
