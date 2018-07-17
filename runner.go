@@ -7,19 +7,21 @@ import (
 	"time"
 )
 
+const (
+	ALL string = "all"
+)
+
 type JobCallback func(name string, args []string, t time.Time)
 
 type Runner struct {
 	jobs     map[string]*Job
 	handlers map[string]JobCallback
-	catchall JobCallback
 }
 
-func NewRunner(f JobCallback) Runner {
+func NewRunner() Runner {
 	r := Runner{
 		jobs:     make(map[string]*Job),
 		handlers: make(map[string]JobCallback),
-		catchall: f,
 	}
 
 	return r
@@ -49,10 +51,6 @@ func (r *Runner) AddHandler(name string, f JobCallback) {
 	r.handlers[name] = f
 }
 
-func (r *Runner) CatchAll(f JobCallback) {
-	r.catchall = f
-}
-
 func (r *Runner) Execute(j *Job, t time.Time) {
 	name := j.Name
 	args := j.Args
@@ -60,13 +58,13 @@ func (r *Runner) Execute(j *Job, t time.Time) {
 
 	if ok {
 		handler(name, args, t)
-	} else {
-		fmt.Printf("[WARN] No handlers for task %s\n", name)
 	}
 
-	fmt.Println(r.catchall)
+	handler, ok = r.handlers[ALL]
 
-	r.catchall(name, args, t)
+	if ok {
+		handler(name, args, t)
+	}
 }
 
 func (r *Runner) Schedule(j *Job, n time.Time, index int) {

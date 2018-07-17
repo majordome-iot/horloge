@@ -84,22 +84,3 @@ func TestExecuteJobWithNoHandlers(t *testing.T) {
 		t.Errorf("expected runner not to call handler")
 	}
 }
-
-func TestCatchAll(t *testing.T) {
-	var actual []string
-	expected := []string{"foo", "bar"}
-	now := time.Now()
-
-	runner := NewRunner()
-	job := NewJob("foobar", Pattern{}, expected)
-
-	runner.AddJob(job)
-	runner.CatchAll(func(name string, args []string, t time.Time) {
-		actual = args
-	})
-	runner.Execute(job, now)
-
-	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf("expected handler to be called with args %v, but got %v", expected, actual)
-	}
-}

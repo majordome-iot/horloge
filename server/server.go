@@ -25,8 +25,9 @@ type Event struct {
 func main() {
 	e := echo.New()
 	m := melody.New()
-	runner := horloge.NewRunner(func(name string, args []string, t time.Time) {
-		fmt.Println("CATCH")
+	runner := horloge.NewRunner()
+
+	runner.AddHandler("all", func(name string, args []string, t time.Time) {
 		event := Event{
 			Name: name,
 			Args: args,
@@ -53,23 +54,19 @@ func main() {
 		return nil
 	})
 
+	httpAddr := ""
+	httPort := 8080
+	addr := fmt.Sprintf("%s:%d", httpAddr, httPort)
+
 	go func() {
-		httpAddr := ""
-		httPort := 8080
-		addr := fmt.Sprintf("%s:%d", httpAddr, httPort)
-
-		go func() {
-			e.Logger.Infof("HTTP Server Listening to %s\n", addr)
-			e.Logger.Fatal(e.Start(addr))
-		}()
-
-		signalChan := make(chan os.Signal, 1)
-		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-		<-signalChan
-
-		log.Println("Shutdown signal received, exiting...")
-		e.Shutdown(context.Background())
+		e.Logger.Infof("HTTP Server Listening to %s\n", addr)
+		e.Logger.Fatal(e.Start(addr))
 	}()
 
-	select {}
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	<-signalChan
+
+	log.Println("Shutdown signal received, exiting...")
+	e.Shutdown(context.Background())
 }

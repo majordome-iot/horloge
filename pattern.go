@@ -1,6 +1,7 @@
 package horloge
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 )
@@ -66,6 +67,20 @@ func (p *Pattern) Time() time.Time {
 	}
 
 	return p.Now
+}
+
+func (p *Pattern) IsZero() bool {
+	fmt.Println(p)
+
+	return p.Second == 0 &&
+		p.Minute == 0 &&
+		p.Hour == 0 &&
+		p.Day == 0 &&
+		p.Month == 0 &&
+		p.Year == 0 &&
+		len(p.Months) == 0 &&
+		len(p.Days) == 0 &&
+		p.Occurence == ""
 }
 
 func (p *Pattern) alignClock(t time.Time) time.Time {

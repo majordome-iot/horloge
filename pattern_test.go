@@ -49,3 +49,14 @@ func TestPatternAt(t *testing.T) {
 		t.Errorf("expected pattern.Days to be %v, but got %v", expected, actual)
 	}
 }
+
+func TestPatternIsZero(t *testing.T) {
+	p := Pattern{}
+
+	actual := p.IsZero()
+	expected := true
+
+	if expected != actual {
+		t.Errorf("expected pattern.IsZero() to be %v, but got %v", expected, actual)
+	}
+}

@@ -1,9 +1,8 @@
 package horloge
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo"
 )
@@ -14,6 +13,16 @@ type jsonMessage struct {
 
 type versionMessage struct {
 	Version string `json:"version"`
+}
+
+type jobScheduledMessage struct {
+	Nexts []time.Time `json:"nexts"`
+	Name  string      `json:"name"`
+}
+
+type jobRegistrationMessage struct {
+	Name    string  `json:"name"`
+	Pattern Pattern `json:"pattern"`
 }
 
 func HttpHandlerPing() func(c echo.Context) error {
@@ -30,29 +39,28 @@ func HttpHandlerVersion() func(c echo.Context) error {
 
 func HttpHandlerRegisterJob(runner Runner) func(c echo.Context) error {
 	return func(c echo.Context) error {
-		var pattern = Pattern{}
+		var data = jobRegistrationMessage{}
 		logger := c.Logger()
 
-		if err := c.Bind(&pattern); err != nil {
+		if err := c.Bind(&data); err != nil {
 			logger.Error(err)
 			return c.JSON(http.StatusBadRequest, jsonMessage{Message: "bad request"})
 		}
 
-		job := NewJob("foobar", pattern)
+		if data.Name == "" || data.Pattern.IsZero() {
+			return c.JSON(http.StatusBadRequest, jsonMessage{Message: "bad request"})
+		}
+
+		job := NewJob(data.Name, data.Pattern)
 		nexts, err := runner.AddJob(job)
 		if err != nil {
 			logger.Error(err)
 			return c.JSON(http.StatusConflict, jsonMessage{Message: "a job with this name already exists"})
 		}
 
-		b, err := json.Marshal(nexts)
-		if err != nil {
-			logger.Error(err)
-			return c.JSON(http.StatusBadRequest, jsonMessage{Message: "bad request"})
-		}
-
-		fmt.Println(b, nexts)
-
-		return c.JSON(http.StatusAccepted, b)
+		return c.JSON(http.StatusAccepted, jobScheduledMessage{
+			Name:  data.Name,
+			Nexts: nexts,
+		})
 	}
 }
