@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hsh/horloge"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/majordome/horloge"
 	melody "gopkg.in/olahol/melody.v1"
 )
 
@@ -46,9 +46,10 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.GET("/ping", horloge.HttpHandlerPing())
-	e.GET("/version", horloge.HttpHandlerVersion())
-	e.POST("/job", horloge.HttpHandlerRegisterJob(runner))
+	e.GET("/ping", horloge.HTTPHandlerPing())
+	e.GET("/health_check", horloge.HTTPHandlerHealthCheck())
+	e.GET("/version", horloge.HTTPHandlerVersion())
+	e.POST("/job", horloge.HTTPHandlerRegisterJob(runner))
 	e.GET("/ws", func(c echo.Context) error {
 		m.HandleRequest(c.Response().Writer, c.Request())
 		return nil

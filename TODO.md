@@ -9,10 +9,13 @@
 [x] Implement server
 [x] Implement client
 
+[ ] Documentation
+[ ] Go doc generation
+[ ] Proper packaing
 [ ] Change Pattern.Days to Pattern.Weekdays
 [ ] Change name Pattern to something else
 [ ] Replace AddJob with Add and Remove with Cancel
 [ ] Allow multiple job handlers
 [ ] @monthly with no month == every month
 [ ] @weekly with no day == every sunday
-[ ] Serialize / Unserialize runner
+[ ] Serialize / Unserialize runner and active jobs

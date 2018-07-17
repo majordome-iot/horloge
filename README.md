@@ -18,28 +18,21 @@ Launch a Horloge task manager
 package main
 
 import (
-  "fmt"
+	"fmt"
+	"time"
 
-  "github.com/majordome/horloge"
+	"github.com/majordome/horloge"
 )
-
 
 func main() {
 	runner := horloge.NewRunner()
+	pattern := horloge.NewPattern("daily").At(9, 30, 0)
+	job := horloge.NewJob("wake up", pattern)
 
-	task := horloge.NewTask("foobar", "foo", "bar")
-	pattern := horloge.Pattern{Occurence: "daily", Hour: 1, Minute: 05, Second: 0}
+	runner.AddJob(job)
 
-	runner.Register(task, pattern)
-
-	go func() {
-		task := horloge.NewTask("foobar", "foo", "bar")
-		pattern := horloge.Pattern{Occurence: "daily", Hour: 1, Minute: 06, Second: 0}
-		runner.Register(task, pattern)
-	}()
-
-	runner.AddHandler("foobar", func(name string, args []string, t time.Time) {
-		fmt.Printf("Running \"%s\" with args %+v at %s\n", name, args, t.String())
+	runner.AddHandler("wake up", func(name string, args []string, t time.Time) {
+		fmt.Printf("[INFO] Running \"%s\" with args %+v at %s\n", name, args, t.String())
 	})
 
 	select {}

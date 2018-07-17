@@ -1,14 +1,14 @@
 package horloge
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 	"time"
 )
 
 const (
-	ALL string = "all"
+	All            string = "all"
+	JobExistsError string = "Cannot add task \"%s\", another task with the same name exists"
 )
 
 type JobCallback func(name string, args []string, t time.Time)
@@ -18,8 +18,8 @@ type Runner struct {
 	handlers map[string]JobCallback
 }
 
-func NewRunner() Runner {
-	r := Runner{
+func NewRunner() *Runner {
+	r := &Runner{
 		jobs:     make(map[string]*Job),
 		handlers: make(map[string]JobCallback),
 	}
@@ -27,13 +27,11 @@ func NewRunner() Runner {
 	return r
 }
 
-// Multiple return values
 func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
 	var nexts []time.Time
 
 	if r.HasJob(job) {
-		return nexts, errors.New(
-			fmt.Sprintf("[ERROR] Cannot add task \"%s\", another task with the same name exists", job.Name))
+		return nexts, fmt.Errorf(JobExistsError, job.Name)
 	}
 
 	nexts = job.Calendar()
@@ -60,7 +58,7 @@ func (r *Runner) Execute(j *Job, t time.Time) {
 		handler(name, args, t)
 	}
 
-	handler, ok = r.handlers[ALL]
+	handler, ok = r.handlers[All]
 
 	if ok {
 		handler(name, args, t)
