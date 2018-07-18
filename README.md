@@ -5,12 +5,46 @@
 
 ### Getting started
 
-Launch Horloge
+Launch Horloge using docker
 
 ```
 $ docker pull majordome/horloge
-$ docker run -p 127.0.0.1:3000:3000/tcp majordome/horloge
+$ docker run -p 127.0.0.1:6432:6432/tcp majordome/horloge
 ```
+
+Using the CLI
+
+```
+$ go get github.com/marjordome/horloge
+$ horloge --bind 0.0.0.0 --port 1234
+```
+
+### CLI Usage
+
+```
+NAME:
+   horloge - A new cli application
+
+USAGE:
+   main.exe [global options] command [command options] [arguments...]
+
+VERSION:
+   0.1.0
+
+AUTHOR:
+   Samori Gorse <samorigorse@gail.com>
+
+COMMANDS:
+     help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --port value, -p value  Port to listen to (default: 6432)
+   --bind value, -b value  Address to bind to (default: "127.0.0.1")
+   --help, -h              show help
+   --version, -v           print the version
+```
+
+
 
 Launch a Horloge task manager
 
