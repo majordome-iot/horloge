@@ -1,6 +1,7 @@
 - [ ] Documentation
-- [ ] Command line options
-- [ ] Config file 
+- [ ] Config file
+- [ ] Docker image
+- [ ] Logger configuration
 - [ ] Change Pattern.Days to Pattern.Weekdays
 - [ ] Change name Pattern to something else
 - [ ] Replace AddJob with Add and Remove with Cancel
