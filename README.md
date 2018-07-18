@@ -61,7 +61,7 @@ import (
 func main() {
 	runner := horloge.NewRunner()
 	pattern := horloge.NewPattern("daily").At(9, 30, 0)
-	job := horloge.NewJob("wake up", pattern)
+	job := horloge.NewJob("wake up", *pattern)
 
 	runner.AddJob(job)
 
@@ -71,7 +71,6 @@ func main() {
 
 	select {}
 }
-
 ```
 
 ### What it is
