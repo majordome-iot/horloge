@@ -55,6 +55,7 @@ func server(addr string) {
 		m.HandleRequest(c.Response().Writer, c.Request())
 		return nil
 	})
+	e.HideBanner = true
 
 	e.Logger.Infof("HTTP Server Listening to %s\n", addr)
 	e.Logger.Fatal(e.Start(addr))
