@@ -42,6 +42,7 @@ func server(addr string) {
 		}
 	})
 
+	e.HideBanner = true
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -55,16 +56,19 @@ func server(addr string) {
 		m.HandleRequest(c.Response().Writer, c.Request())
 		return nil
 	})
-	e.HideBanner = true
 
-	e.Logger.Infof("HTTP Server Listening to %s\n", addr)
-	e.Logger.Fatal(e.Start(addr))
+	go func() {
+		fmt.Printf("🕒 Horloge v%s\n", horloge.Version)
+		fmt.Printf("Http server powered by Echo v%s\n", echo.Version)
+		fmt.Printf("Websocket server powered by Melody\n")
+		e.Logger.Fatal(e.Start(addr))
+	}()
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 
-	log.Println("Shutdown signal received, exiting...")
+	fmt.Println("Shutdown signal received, exiting...")
 	e.Shutdown(context.Background())
 }
 
