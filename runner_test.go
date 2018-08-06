@@ -12,12 +12,12 @@ func TestAddJob(t *testing.T) {
 	pattern := Pattern{Occurence: "every", Second: 1}
 	job := NewJob("foobar", pattern)
 
-	err := runner.AddJob(job)
+	_, err := runner.AddJob(job)
 	if err != nil {
 		t.Errorf("expected runner not to return an error when adding a job")
 	}
 
-	err = runner.AddJob(job)
+	_, err = runner.AddJob(job)
 	if err == nil {
 		t.Errorf("expected runner to return an error when adding a job with the same name")
 	}
@@ -38,14 +38,14 @@ func TestRemoveJob(t *testing.T) {
 	runner := NewRunner()
 	job := NewJob("foobar", Pattern{})
 
-	err := runner.AddJob(job)
+	_, err := runner.AddJob(job)
 	if err != nil {
 		t.Errorf("expected runner not to return an error")
 	}
 
 	runner.RemoveJob(job)
 
-	err = runner.AddJob(job)
+	_, err = runner.AddJob(job)
 	if err != nil {
 		t.Errorf("expected runner to return an error")
 	}

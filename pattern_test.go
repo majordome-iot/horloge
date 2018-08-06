@@ -37,12 +37,26 @@ func TestPatternOnMonths(t *testing.T) {
 }
 
 func TestPatternAt(t *testing.T) {
-	p := NewPattern("every").At(14, 5, 5)
+	hour := 14
+	minute := 5
+	second := 5
+	p := NewPattern("daily").At(hour, minute, second)
 
-	expected := p.Time()
-	actual := p.Months
+	expected := []int{hour, minute, second}
+	actual := []int{p.Hour, p.Minute, p.Second}
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("expected pattern.Days to be %v, but got %v", expected, actual)
+	}
+}
+
+func TestPatternIsZero(t *testing.T) {
+	p := Pattern{}
+
+	actual := p.IsZero()
+	expected := true
+
+	if expected != actual {
+		t.Errorf("expected pattern.IsZero() to be %v, but got %v", expected, actual)
 	}
 }

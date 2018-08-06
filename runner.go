@@ -1,35 +1,40 @@
 package horloge
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 	"time"
 )
 
-type TaskHandler func(name string, args []string, t time.Time)
+const (
+	All            string = "all"
+	JobExistsError string = "Cannot add task \"%s\", another task with the same name exists"
+)
+
+type JobCallback func(name string, args []string, t time.Time)
 
 type Runner struct {
 	jobs     map[string]*Job
-	handlers map[string]TaskHandler
+	handlers map[string]JobCallback
 }
 
-func NewRunner() Runner {
-	r := Runner{
+func NewRunner() *Runner {
+	r := &Runner{
 		jobs:     make(map[string]*Job),
-		handlers: make(map[string]TaskHandler),
+		handlers: make(map[string]JobCallback),
 	}
 
 	return r
 }
 
-func (r *Runner) AddJob(job *Job) error {
-	nexts := job.Calendar()
+func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
+	var nexts []time.Time
 
 	if r.HasJob(job) {
-		return errors.New(
-			fmt.Sprintf("[ERROR] Cannot add task \"%s\", another task with the same name exists", job.Name))
+		return nexts, fmt.Errorf(JobExistsError, job.Name)
 	}
+
+	nexts = job.Calendar()
 
 	for i, n := range nexts {
 		go r.Schedule(job, n, i)
@@ -37,10 +42,10 @@ func (r *Runner) AddJob(job *Job) error {
 
 	r.jobs[job.Name] = job
 
-	return nil
+	return nexts, nil
 }
 
-func (r *Runner) AddHandler(name string, f func(name string, args []string, t time.Time)) {
+func (r *Runner) AddHandler(name string, f JobCallback) {
 	r.handlers[name] = f
 }
 
@@ -51,8 +56,12 @@ func (r *Runner) Execute(j *Job, t time.Time) {
 
 	if ok {
 		handler(name, args, t)
-	} else {
-		fmt.Printf("[WARN] No handlers for task %s\n", name)
+	}
+
+	handler, ok = r.handlers[All]
+
+	if ok {
+		handler(name, args, t)
 	}
 }
 
@@ -86,7 +95,7 @@ func (r *Runner) HasJob(job *Job) bool {
 
 func (r *Runner) RemoveJob(job *Job) {
 	if r.HasJob(job) {
-		fmt.Printf("[INFO] Canceling job \"%s\"", job.Name)
+		fmt.Printf("[INFO] Canceling job \"%s\"\n", job.Name)
 		job.Cancel()
 		delete(r.jobs, job.Name)
 	}

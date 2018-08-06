@@ -1,20 +1,21 @@
 package horloge
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 )
 
 type Pattern struct {
+	Second    int    `json:"second" form:"second" query:"second"`
+	Minute    int    `json:"minute" form:"minute" query:"minute"`
+	Hour      int    `json:"hour" form:"hour" query:"hour"`
+	Day       int    `json:"day" form:"day" query:"day"`
+	Month     int    `json:"month" form:"month" query:"month"`
+	Year      int    `json:"year" form:"year" query:"year"`
+	Occurence string `json:"occurence" form:"occurence" query:"occurence"`
 	Days      []time.Weekday
 	Months    []time.Month
-	Second    int
-	Minute    int
-	Hour      int
-	Day       int
-	Month     int
-	Year      int
-	Occurence string
 	Now       time.Time
 }
 
@@ -66,6 +67,20 @@ func (p *Pattern) Time() time.Time {
 	}
 
 	return p.Now
+}
+
+func (p *Pattern) IsZero() bool {
+	fmt.Println(p)
+
+	return p.Second == 0 &&
+		p.Minute == 0 &&
+		p.Hour == 0 &&
+		p.Day == 0 &&
+		p.Month == 0 &&
+		p.Year == 0 &&
+		len(p.Months) == 0 &&
+		len(p.Days) == 0 &&
+		p.Occurence == ""
 }
 
 func (p *Pattern) alignClock(t time.Time) time.Time {
