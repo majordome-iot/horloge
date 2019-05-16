@@ -13,7 +13,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/majordome/horloge"
+	"github.com/majordome-iot/horloge"
 	melody "gopkg.in/olahol/melody.v1"
 )
 

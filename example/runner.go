@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/majordome/horloge"
+	"github.com/majordome-iot/horloge"
 )
 
 func main() {
