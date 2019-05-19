@@ -34,6 +34,24 @@ func TestHasJob(t *testing.T) {
 	}
 }
 
+func TestToJSON(t *testing.T) {
+	runner := NewRunner()
+	job := NewJob("foobar", Pattern{})
+	runner.AddJob(job)
+
+	json, _ := runner.ToJSON()
+	newRunner, err := NewFromJson(json)
+	_, ok := newRunner.jobs[job.Name]
+
+	if err != nil {
+		t.Errorf("Error while loading from JSON: %v", err)
+	}
+
+	if ok != true {
+		t.Errorf("Job %s not found in runner", job.Name)
+	}
+}
+
 func TestRemoveJob(t *testing.T) {
 	runner := NewRunner()
 	job := NewJob("foobar", Pattern{})

@@ -34,6 +34,35 @@ func NewRunner() *Runner {
 	return r
 }
 
+func NewFromJson(data []byte) (*Runner, error) {
+	var jobs []Job
+	err := json.Unmarshal(data, &jobs)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error while parsing JSON %v", err)
+	}
+
+	r := NewRunner()
+
+	for _, job := range jobs {
+		r.AddJob(&job)
+	}
+
+	return r, nil
+}
+
+func (r *Runner) ToJSON() ([]byte, error) {
+	s := make([]*Job, 0)
+	for _, job := range r.jobs {
+		s = append(s, job)
+	}
+	return json.Marshal(s)
+}
+
+func (r *Runner) ToFile() error {
+	return nil
+}
+
 func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
 	var nexts []time.Time
 
