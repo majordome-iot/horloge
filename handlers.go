@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -59,24 +60,31 @@ func HTTPHandlerHealthCheck() func(c echo.Context) error {
 //
 // To add a job you must set a request to /job with a json body
 //
-func HTTPHandlerRegisterJob(runner *Runner) func(c echo.Context) error {
+func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		var data = jobRegistrationMessage{}
-		logger := c.Logger()
 
 		if err := c.Bind(&data); err != nil {
-			logger.Error(err)
+			r.log.WithFields(logrus.Fields{
+				"code": 400,
+			}).Error(string(err.Error()))
 			return c.JSON(http.StatusBadRequest, JSONMessage{Message: "bad request", Details: MalformedMessage})
 		}
 
 		if data.Name == "" || data.Pattern.IsZero() {
+			r.log.WithFields(logrus.Fields{
+				"code": 400,
+			}).Error(InvalidJobRequestBody)
 			return c.JSON(http.StatusBadRequest, JSONMessage{Message: "bad request", Details: InvalidJobRequestBody})
 		}
 
 		job := NewJob(data.Name, data.Pattern)
-		nexts, err := runner.AddJob(job)
+		nexts, err := r.AddJob(job)
+
 		if err != nil {
-			logger.Error(err)
+			r.log.WithFields(logrus.Fields{
+				"code": 409,
+			}).Error(err)
 			return c.JSON(http.StatusConflict, JSONMessage{Message: "conflict", Details: err.Error()})
 		}
 

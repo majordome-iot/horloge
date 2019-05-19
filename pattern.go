@@ -1,7 +1,6 @@
 package horloge
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 )
@@ -70,8 +69,6 @@ func (p *Pattern) Time() time.Time {
 }
 
 func (p *Pattern) IsZero() bool {
-	fmt.Println(p)
-
 	return p.Second == 0 &&
 		p.Minute == 0 &&
 		p.Hour == 0 &&

@@ -1,9 +1,12 @@
 package horloge
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -16,12 +19,16 @@ type JobCallback func(name string, args []string, t time.Time)
 type Runner struct {
 	jobs     map[string]*Job
 	handlers map[string]JobCallback
+	log      *logrus.Logger
 }
 
 func NewRunner() *Runner {
+	log := logrus.New()
+
 	r := &Runner{
 		jobs:     make(map[string]*Job),
 		handlers: make(map[string]JobCallback),
+		log:      log,
 	}
 
 	return r
@@ -66,13 +73,20 @@ func (r *Runner) Execute(j *Job, t time.Time) {
 }
 
 func (r *Runner) Schedule(j *Job, n time.Time, index int) {
-	fmt.Printf("[INFO] Scheduling task \"%s\" at %s\n", j.Name, n.String())
+	contextLogger := r.log.WithFields(logrus.Fields{
+		"at":     n,
+		"name":   j.Name,
+		"action": "schedule",
+	})
+
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	duration := time.Until(n)
 	ticker := time.NewTicker(duration)
 	j.tickers[index] = ticker
+
+	contextLogger.Info(fmt.Sprintf("Scheduling task \"%s\" at %s\n", j.Name, n.String()))
 
 	select {
 	case t := <-ticker.C:
@@ -94,8 +108,12 @@ func (r *Runner) HasJob(job *Job) bool {
 }
 
 func (r *Runner) RemoveJob(job *Job) {
+	contextLogger := r.log.WithFields(logrus.Fields{
+		"action": "remove",
+		"name":   job.Name,
+	})
 	if r.HasJob(job) {
-		fmt.Printf("[INFO] Canceling job \"%s\"\n", job.Name)
+		contextLogger.Info(fmt.Sprintf("Canceling job \"%s\"\n", job.Name))
 		job.Cancel()
 		delete(r.jobs, job.Name)
 	}
