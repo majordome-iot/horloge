@@ -5,10 +5,11 @@ import (
 )
 
 type Job struct {
-	Name    string
-	Args    []string
-	Pattern Pattern
-	tickers []*time.Ticker
+	Name        string
+	Description string
+	Args        []string
+	Pattern     Pattern
+	tickers     []*time.Ticker
 }
 
 func NewJob(name string, pattern Pattern, args ...[]string) *Job {
