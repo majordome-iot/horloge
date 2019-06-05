@@ -26,9 +26,11 @@ type Event struct {
 func server(addr string) {
 	e := echo.New()
 	m := melody.New()
+
+	// runner := horloge.NewRunner(horloge.SyncRedis{})
 	runner := horloge.NewRunner()
 
-	runner.AddHandler("all", func(name string, args []string, t time.Time) {
+	runner.AddHandler(horloge.All, func(name string, args []string, t time.Time) {
 		event := Event{
 			Name: name,
 			Args: args,

@@ -14,11 +14,11 @@ const (
 	JobExistsError string = "Cannot add task \"%s\", another task with the same name exists"
 )
 
-type JobCallback func(name string, args []string, t time.Time)
+type Callback func(...interface{})
 
 type Runner struct {
 	jobs     map[string]*Job
-	handlers map[string]JobCallback
+	handlers map[string][]Callback
 	log      *logrus.Logger
 }
 
@@ -27,7 +27,7 @@ func NewRunner() *Runner {
 
 	r := &Runner{
 		jobs:     make(map[string]*Job),
-		handlers: make(map[string]JobCallback),
+		handlers: make(map[string][]Callback),
 		log:      log,
 	}
 
@@ -43,24 +43,17 @@ func NewFromJson(data []byte) (*Runner, error) {
 	}
 
 	r := NewRunner()
-
-	for _, job := range jobs {
-		r.AddJob(&job)
-	}
+	r.AddJobs(jobs)
 
 	return r, nil
 }
 
-func (r *Runner) ToJSON() ([]byte, error) {
+func (r *Runner) ToJSON() ([]*Job, error) {
 	s := make([]*Job, 0)
 	for _, job := range r.jobs {
 		s = append(s, job)
 	}
-	return json.Marshal(s)
-}
-
-func (r *Runner) ToFile() error {
-	return nil
+	return s, nil
 }
 
 func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
@@ -81,24 +74,38 @@ func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
 	return nexts, nil
 }
 
-func (r *Runner) AddHandler(name string, f JobCallback) {
-	r.handlers[name] = f
+func (r *Runner) AddJobs(jobs []Job) {
+	for _, job := range jobs {
+		r.AddJob(&job)
+	}
 }
 
-func (r *Runner) Execute(j *Job, t time.Time) {
-	name := j.Name
-	args := j.Args
-	handler, ok := r.handlers[name]
+func (r *Runner) Emit(name string, args ...interface{}) {
+	handlers, ok := r.handlers[name]
 
 	if ok {
-		handler(name, args, t)
+		for _, handler := range handlers {
+			handler(args...)
+		}
+	}
+}
+
+func (r *Runner) Subscribe(name string, f Callback) {
+	_, ok := r.handlers[name]
+
+	if !ok {
+		r.handlers[name] = make([]Callback, 0)
 	}
 
-	handler, ok = r.handlers[All]
+	r.handlers[name] = append(r.handlers[name], f)
+}
 
-	if ok {
-		handler(name, args, t)
-	}
+func (r *Runner) AddHandler(name string, f Callback) {
+	r.Subscribe("job:"+name, f)
+}
+
+func JobArgs(a []interface{}) (string, []string, time.Time) {
+	return a[0].(string), a[1].([]string), a[2].(time.Time)
 }
 
 func (r *Runner) Schedule(j *Job, n time.Time, index int) {
@@ -119,7 +126,7 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 
 	select {
 	case t := <-ticker.C:
-		r.Execute(j, t)
+		r.Emit("job:"+j.Name, j.Name, j.Args, t)
 		next := j.Calendar()[index]
 		if r.HasJob(j) {
 			go r.Schedule(j, next, index)
@@ -146,4 +153,13 @@ func (r *Runner) RemoveJob(job *Job) {
 		job.Cancel()
 		delete(r.jobs, job.Name)
 	}
+}
+
+func (r *Runner) Sync(s Sync) {
+	jobs := s.Read()
+	r.AddJobs(jobs)
+	r.Subscribe("job:add", func(args ...interface{}) {
+		newJobs, _ := r.ToJSON()
+		s.Write(newJobs)
+	})
 }
