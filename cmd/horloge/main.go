@@ -30,7 +30,8 @@ func server(addr string) {
 	// runner := horloge.NewRunner(horloge.SyncRedis{})
 	runner := horloge.NewRunner()
 
-	runner.AddHandler(horloge.All, func(name string, args []string, t time.Time) {
+	runner.AddHandler("*", func(arguments ...interface{}) {
+		name, args, t := horloge.JobArgs(arguments)
 		event := Event{
 			Name: name,
 			Args: args,

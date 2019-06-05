@@ -1,7 +1,6 @@
 package horloge
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -10,7 +9,6 @@ import (
 )
 
 const (
-	All            string = "all"
 	JobExistsError string = "Cannot add task \"%s\", another task with the same name exists"
 )
 
@@ -20,6 +18,10 @@ type Runner struct {
 	jobs     map[string]*Job
 	handlers map[string][]Callback
 	log      *logrus.Logger
+}
+
+func JobArgs(a []interface{}) (string, []string, time.Time) {
+	return a[0].(string), a[1].([]string), a[2].(time.Time)
 }
 
 func NewRunner() *Runner {
@@ -32,20 +34,6 @@ func NewRunner() *Runner {
 	}
 
 	return r
-}
-
-func NewFromJson(data []byte) (*Runner, error) {
-	var jobs []Job
-	err := json.Unmarshal(data, &jobs)
-
-	if err != nil {
-		return nil, fmt.Errorf("Error while parsing JSON %v", err)
-	}
-
-	r := NewRunner()
-	r.AddJobs(jobs)
-
-	return r, nil
 }
 
 func (r *Runner) ToJSON() ([]*Job, error) {
@@ -70,6 +58,8 @@ func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
 	}
 
 	r.jobs[job.Name] = job
+
+	r.Emit("job:add", job)
 
 	return nexts, nil
 }
@@ -104,10 +94,6 @@ func (r *Runner) AddHandler(name string, f Callback) {
 	r.Subscribe("job:"+name, f)
 }
 
-func JobArgs(a []interface{}) (string, []string, time.Time) {
-	return a[0].(string), a[1].([]string), a[2].(time.Time)
-}
-
 func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 	contextLogger := r.log.WithFields(logrus.Fields{
 		"at":     n,
@@ -127,6 +113,7 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 	select {
 	case t := <-ticker.C:
 		r.Emit("job:"+j.Name, j.Name, j.Args, t)
+		r.Emit("job:*", j.Name, j.Args, t)
 		next := j.Calendar()[index]
 		if r.HasJob(j) {
 			go r.Schedule(j, next, index)
