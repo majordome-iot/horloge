@@ -54,7 +54,8 @@ func server(addr string) {
 	e.GET("/ping", horloge.HTTPHandlerPing())
 	e.GET("/health_check", horloge.HTTPHandlerHealthCheck())
 	e.GET("/version", horloge.HTTPHandlerVersion())
-	e.POST("/job", horloge.HTTPHandlerRegisterJob(runner))
+	e.POST("/jobs", horloge.HTTPHandlerRegisterJob(runner))
+	e.GET("/jobs", horloge.HTTPHandlerListJobs(runner))
 	e.GET("/ws", func(c echo.Context) error {
 		m.HandleRequest(c.Response().Writer, c.Request())
 		return nil

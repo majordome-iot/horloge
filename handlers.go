@@ -11,6 +11,7 @@ import (
 const (
 	MalformedMessage      string = "Malformed or empty request body"
 	InvalidJobRequestBody string = "\"pattern\" and \"name\" must be present"
+	UnableToSerializeJobs string = "Unable to serialize jobs"
 )
 
 type JSONMessage struct {
@@ -56,9 +57,9 @@ func HTTPHandlerHealthCheck() func(c echo.Context) error {
 	}
 }
 
-// HTTPHandlerRegisterJob Handles POST requests to /job.
+// HTTPHandlerRegisterJob Handles POST requests to /jobs.
 //
-// To add a job you must set a request to /job with a json body
+// To add a job you must send a request to /jobs with a json body
 //
 func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 	return func(c echo.Context) error {
@@ -92,5 +93,16 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 			Name:  data.Name,
 			Nexts: nexts,
 		})
+	}
+}
+
+// HTTPHandlerListJobs List Jobs
+func HTTPHandlerListJobs(r *Runner) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		jobs, err := r.ToJSON()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, JSONMessage{Message: "internal server error", Details: UnableToSerializeJobs})
+		}
+		return c.JSON(http.StatusOK, jobs)
 	}
 }
