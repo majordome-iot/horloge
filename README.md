@@ -8,8 +8,8 @@
 Launch Horloge using docker
 
 ```
-$ docker pull majordome/horloge
-$ docker run -p 127.0.0.1:6432:6432/tcp majordome/horloge
+$ docker pull shinuza/horloge
+$ docker run -p 127.0.0.1:6432:6432/tcp shinuza/horloge
 ```
 
 Using the CLI
