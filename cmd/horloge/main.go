@@ -38,6 +38,8 @@ func server(addr string, runner *horloge.Runner) {
 	e.GET("/version", horloge.HTTPHandlerVersion())
 	e.POST("/jobs", horloge.HTTPHandlerRegisterJob(runner))
 	e.GET("/jobs", horloge.HTTPHandlerListJobs(runner))
+	e.GET("/jobs/:id", horloge.HTTPHandlerJobDetail(runner))
+	e.DELETE("/jobs/:id", horloge.HTTPHandlerDeleteJob(runner))
 	e.GET("/ws", func(c echo.Context) error {
 		m.HandleRequest(c.Response().Writer, c.Request())
 		return nil

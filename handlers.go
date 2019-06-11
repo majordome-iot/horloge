@@ -69,14 +69,20 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 			r.log.WithFields(logrus.Fields{
 				"code": 400,
 			}).Error(string(err.Error()))
-			return c.JSON(http.StatusBadRequest, JSONMessage{Message: "bad request", Details: MalformedMessage})
+			return c.JSON(http.StatusBadRequest, JSONMessage{
+				Message: "bad request",
+				Details: MalformedMessage,
+			})
 		}
 
 		if data.Name == "" || data.Pattern.IsZero() {
 			r.log.WithFields(logrus.Fields{
 				"code": 400,
 			}).Error(InvalidJobRequestBody)
-			return c.JSON(http.StatusBadRequest, JSONMessage{Message: "bad request", Details: InvalidJobRequestBody})
+			return c.JSON(http.StatusBadRequest, JSONMessage{
+				Message: "bad request",
+				Details: InvalidJobRequestBody,
+			})
 		}
 
 		job := NewJob(data.Name, data.Pattern)
@@ -86,7 +92,10 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 			r.log.WithFields(logrus.Fields{
 				"code": 409,
 			}).Error(err)
-			return c.JSON(http.StatusConflict, JSONMessage{Message: "conflict", Details: err.Error()})
+			return c.JSON(http.StatusConflict, JSONMessage{
+				Message: "conflict",
+				Details: err.Error(),
+			})
 		}
 
 		return c.JSON(http.StatusAccepted, JobScheduledMessage{
@@ -96,12 +105,51 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 	}
 }
 
+// HTTPHandlerJobDetail Show job detail
+func HTTPHandlerJobDetail(r *Runner) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		name := c.Param("id")
+		job := r.GetJob(name)
+
+		if job == nil {
+			return c.JSON(http.StatusNotFound, JSONMessage{
+				Message: "not found",
+				Details: "Job with name `" + name + "` does not exist",
+			})
+		}
+
+		return c.JSON(http.StatusOK, job)
+	}
+}
+
+// HTTPHandlerDeleteJob Delete a job
+func HTTPHandlerDeleteJob(r *Runner) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		name := c.Param("id")
+		job := r.GetJob(name)
+
+		if job == nil {
+			return c.JSON(http.StatusNotFound, JSONMessage{
+				Message: "not found",
+				Details: "Job with name " + name + "does not exist",
+			})
+		}
+
+		r.RemoveJob(job)
+
+		return c.NoContent(http.StatusNoContent)
+	}
+}
+
 // HTTPHandlerListJobs List Jobs
 func HTTPHandlerListJobs(r *Runner) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		jobs, err := r.ToJSON()
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, JSONMessage{Message: "internal server error", Details: UnableToSerializeJobs})
+			return c.JSON(http.StatusInternalServerError, JSONMessage{
+				Message: "internal server error",
+				Details: UnableToSerializeJobs,
+			})
 		}
 		return c.JSON(http.StatusOK, jobs)
 	}

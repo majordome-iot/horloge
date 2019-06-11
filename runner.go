@@ -38,6 +38,7 @@ func NewRunner() *Runner {
 
 func (r *Runner) ToJSON() ([]*Job, error) {
 	s := make([]*Job, 0)
+
 	for _, job := range r.jobs {
 		s = append(s, job)
 	}
@@ -58,10 +59,17 @@ func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
 	}
 
 	r.jobs[job.Name] = job
-
 	r.Emit("job:add", job)
 
 	return nexts, nil
+}
+
+func (r *Runner) GetJob(name string) *Job {
+	job, ok := r.jobs[name]
+	if ok {
+		return job
+	}
+	return nil
 }
 
 func (r *Runner) AddJobs(jobs []Job) {
@@ -139,14 +147,21 @@ func (r *Runner) RemoveJob(job *Job) {
 		contextLogger.Info(fmt.Sprintf("Canceling job \"%s\"\n", job.Name))
 		job.Cancel()
 		delete(r.jobs, job.Name)
+		r.Emit("job:remove", job)
+	}
+}
+
+func writeSync(r *Runner, s Sync) func(...interface{}) {
+	return func(args ...interface{}) {
+		newJobs, _ := r.ToJSON()
+		s.Write(newJobs)
 	}
 }
 
 func (r *Runner) Sync(s Sync) {
 	jobs := s.Read()
 	r.AddJobs(jobs)
-	r.Subscribe("job:add", func(args ...interface{}) {
-		newJobs, _ := r.ToJSON()
-		s.Write(newJobs)
-	})
+
+	r.Subscribe("job:add", writeSync(r, s))
+	r.Subscribe("job:remove", writeSync(r, s))
 }
