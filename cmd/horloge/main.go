@@ -23,27 +23,9 @@ type Event struct {
 	Time time.Time
 }
 
-func server(addr string) {
+func server(addr string, runner *horloge.Runner) {
 	e := echo.New()
 	m := melody.New()
-
-	// runner := horloge.NewRunner(horloge.SyncRedis{})
-	runner := horloge.NewRunner()
-
-	runner.AddHandler("*", func(arguments ...interface{}) {
-		name, args, t := horloge.JobArgs(arguments)
-		event := Event{
-			Name: name,
-			Args: args,
-			Time: t,
-		}
-		b, err := json.Marshal(event)
-		if err != nil {
-			m.Broadcast([]byte("Fail"))
-		} else {
-			m.Broadcast(b)
-		}
-	})
 
 	e.HideBanner = true
 	// Middleware
@@ -61,6 +43,22 @@ func server(addr string) {
 		return nil
 	})
 
+	runner.AddHandler("*", func(arguments ...interface{}) {
+		name, args, t := horloge.JobArgs(arguments)
+		event := Event{
+			Name: name,
+			Args: args,
+			Time: t,
+		}
+		b, err := json.Marshal(event)
+		if err != nil {
+			// TODO: Do better here
+			m.Broadcast([]byte("Fail"))
+		} else {
+			m.Broadcast(b)
+		}
+	})
+
 	go func() {
 		fmt.Printf("🕒 Horloge v%s\n", horloge.Version)
 		fmt.Printf("Http server powered by Echo v%s\n", echo.Version)
@@ -76,6 +74,35 @@ func server(addr string) {
 	e.Shutdown(context.Background())
 }
 
+func sync(c *cli.Context) horloge.Sync {
+	switch s := c.String("sync"); s {
+	case "redis":
+		addr := c.String("redis-addr")
+		db := c.Int("redis-db")
+		fmt.Printf("Syncing with redis %s with db %d \n", addr, db)
+
+		return &horloge.SyncRedis{
+			Addr:     addr,
+			Password: c.String("redis-passwd"),
+			DB:       db,
+		}
+	case "file":
+		path := c.String("file-path")
+		fmt.Printf("Syncing with file: %s\n", path)
+
+		return &horloge.SyncDisk{
+			Path: path,
+		}
+	default:
+		fmt.Println("No sync")
+		return &horloge.SyncNone{}
+	}
+}
+
+func bind(c *cli.Context) string {
+	return fmt.Sprintf("%s:%d", c.String("bind"), c.Int("port"))
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "horloge"
@@ -83,7 +110,7 @@ func main() {
 	app.Authors = []cli.Author{
 		cli.Author{
 			Name:  "Samori Gorse",
-			Email: "samorigorse@gail.com",
+			Email: "samorigorse@gmail.com",
 		},
 	}
 	app.Flags = []cli.Flag{
@@ -97,13 +124,42 @@ func main() {
 			Usage: "Address to bind to",
 			Value: "127.0.0.1",
 		},
+		cli.StringFlag{
+			Name:  "sync",
+			Usage: "Sync method to use (redis, file)",
+			Value: "none",
+		},
+		cli.StringFlag{
+			Name:  "file-path, f",
+			Usage: "Output file path (used with `file` sync)",
+			Value: "none",
+		},
+
+		cli.StringFlag{
+			Name:  "redis-addr",
+			Usage: "Address of the redis server (used with `redis` sync)",
+			Value: "localhost:6379",
+		},
+		cli.StringFlag{
+			Name:  "redis-passwd",
+			Usage: "Password of the redis server (used with `redis` sync)",
+			Value: "",
+		},
+		cli.IntFlag{
+			Name:  "redis-db",
+			Usage: "Which database to use (used with `redis` sync)",
+			Value: 0,
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
-		host := c.String("bind")
-		port := c.Int("port")
+		bindTo := bind(c)
+		sync := sync(c)
 
-		server(fmt.Sprintf("%s:%d", host, port))
+		runner := horloge.NewRunner()
+		runner.Sync(sync)
+
+		server(bindTo, runner)
 
 		return nil
 	}
