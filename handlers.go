@@ -86,7 +86,7 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 		}
 
 		job := NewJob(data.Name, data.Pattern)
-		nexts, err := r.AddJob(job)
+		nexts, err := r.AddJob(*job)
 
 		if err != nil {
 			r.log.WithFields(logrus.Fields{

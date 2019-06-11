@@ -45,10 +45,10 @@ func (r *Runner) ToJSON() ([]*Job, error) {
 	return s, nil
 }
 
-func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
+func (r *Runner) AddJob(job Job) ([]time.Time, error) {
 	var nexts []time.Time
 
-	if r.HasJob(job) {
+	if r.HasJob(&job) {
 		return nexts, fmt.Errorf(JobExistsError, job.Name)
 	}
 
@@ -58,7 +58,7 @@ func (r *Runner) AddJob(job *Job) ([]time.Time, error) {
 		go r.Schedule(job, n, i)
 	}
 
-	r.jobs[job.Name] = job
+	r.jobs[job.Name] = &job
 	r.Emit("job:add", job)
 
 	return nexts, nil
@@ -74,7 +74,7 @@ func (r *Runner) GetJob(name string) *Job {
 
 func (r *Runner) AddJobs(jobs []Job) {
 	for _, job := range jobs {
-		r.AddJob(&job)
+		r.AddJob(job)
 	}
 }
 
@@ -102,7 +102,7 @@ func (r *Runner) AddHandler(name string, f Callback) {
 	r.Subscribe("job:"+name, f)
 }
 
-func (r *Runner) Schedule(j *Job, n time.Time, index int) {
+func (r *Runner) Schedule(j Job, n time.Time, index int) {
 	contextLogger := r.log.WithFields(logrus.Fields{
 		"at":     n,
 		"name":   j.Name,
@@ -123,7 +123,7 @@ func (r *Runner) Schedule(j *Job, n time.Time, index int) {
 		r.Emit("job:"+j.Name, j.Name, j.Args, t)
 		r.Emit("job:*", j.Name, j.Args, t)
 		next := j.Calendar()[index]
-		if r.HasJob(j) {
+		if r.HasJob(&j) {
 			go r.Schedule(j, next, index)
 
 		}
