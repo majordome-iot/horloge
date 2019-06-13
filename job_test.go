@@ -7,7 +7,7 @@ import (
 )
 
 func TestBind(t *testing.T) {
-	job := NewJob("Run outside", Pattern{})
+	job := NewJob("Run outside", Pattern{}, []string{})
 	job.Bind([]string{"in", "the", "rain"})
 
 	actual := job.Args
@@ -21,7 +21,7 @@ func TestBind(t *testing.T) {
 func TestEvery(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 15, 0, 0, 0, time.UTC)
 	p := Pattern{Occurence: "every", Hour: 1, Minute: 30, Now: then}
-	job := NewJob("Bat eyes", p)
+	job := NewJob("Bat eyes", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -35,7 +35,7 @@ func TestEvery(t *testing.T) {
 func TestDailyPassedTime(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 15, 0, 0, 0, time.UTC)
 	p := Pattern{Occurence: "daily", Hour: 9, Minute: 30, Second: 0, Now: then}
-	job := NewJob("Breakfast", p)
+	job := NewJob("Breakfast", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -49,7 +49,7 @@ func TestDailyPassedTime(t *testing.T) {
 func TestDailyFutureTime(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 7, 30, 0, 0, time.UTC)
 	p := Pattern{Occurence: "daily", Hour: 9, Minute: 30, Second: 0, Now: then}
-	job := NewJob("Breakfast", p)
+	job := NewJob("Breakfast", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -65,7 +65,7 @@ func TestWeekly(t *testing.T) {
 	days := []time.Weekday{time.Monday, time.Thursday}
 
 	p := Pattern{Occurence: "weekly", Days: days, Hour: 20, Minute: 0, Second: 0, Now: then}
-	job := NewJob("Take out the trash", p)
+	job := NewJob("Take out the trash", p, []string{})
 
 	actual := job.Repeat()
 	expected := []string{
@@ -85,7 +85,7 @@ func TestWeeklySameDay(t *testing.T) {
 	days := []time.Weekday{time.Wednesday}
 
 	p := Pattern{Occurence: "weekly", Days: days, Hour: 12, Minute: 0, Second: 0, Now: then}
-	job := NewJob("Picnic with the park", p)
+	job := NewJob("Picnic with the park", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -100,7 +100,7 @@ func TestMonthly(t *testing.T) {
 	months := []time.Month{time.January, time.December}
 
 	p := Pattern{Occurence: "monthly", Months: months, Day: 20, Now: then}
-	job := NewJob("Fill out my W-2", p)
+	job := NewJob("Fill out my W-2", p, []string{})
 
 	result := job.Repeat()
 	expected := []string{
@@ -121,7 +121,7 @@ func TestMonthlyWithDatetime(t *testing.T) {
 	months := []time.Month{time.January, time.December}
 
 	p := Pattern{Occurence: "monthly", Months: months, Day: 20, Hour: 12, Minute: 30, Now: then}
-	job := NewJob("Lunch with my step mom", p)
+	job := NewJob("Lunch with my step mom", p, []string{})
 
 	result := job.Repeat()
 	expected := []string{
@@ -142,7 +142,7 @@ func TestMonthlyWithoutDate(t *testing.T) {
 	months := []time.Month{time.February, time.September}
 
 	p := Pattern{Occurence: "monthly", Months: months, Now: then}
-	job := NewJob("Fill out my W-2", p)
+	job := NewJob("Fill out my W-2", p, []string{})
 
 	actual := job.Repeat()
 	expected := []string{
@@ -162,7 +162,7 @@ func TestMonthlySameMonth(t *testing.T) {
 	months := []time.Month{time.October}
 
 	p := Pattern{Occurence: "monthly", Months: months, Day: 23, Now: then}
-	job := NewJob("Fill out my W-2", p)
+	job := NewJob("Fill out my W-2", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -177,7 +177,7 @@ func TestYearly(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 15, 0, 0, 0, time.UTC)
 
 	p := Pattern{Occurence: "yearly", Month: 7, Day: 4, Hour: 22, Minute: 35, Now: then}
-	job := NewJob("Mow the lawn", p)
+	job := NewJob("Mow the lawn", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -192,7 +192,7 @@ func TestYearlyWithoutDate(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 15, 0, 0, 0, time.UTC)
 
 	p := Pattern{Occurence: "yearly", Now: then}
-	job := NewJob("Mow the lawn", p)
+	job := NewJob("Mow the lawn", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()
@@ -207,7 +207,7 @@ func TestYearlyUpcomingDate(t *testing.T) {
 	then := time.Date(2015, time.October, 21, 15, 0, 0, 0, time.UTC)
 
 	p := Pattern{Occurence: "yearly", Month: int(time.October), Day: 22, Now: then}
-	job := NewJob("Mow the lawn", p)
+	job := NewJob("Mow the lawn", p, []string{})
 
 	result := job.Repeat()
 	actual := result[0].String()

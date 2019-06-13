@@ -25,8 +25,10 @@ type JobScheduledMessage struct {
 }
 
 type jobRegistrationMessage struct {
-	Name    string  `json:"name"`
-	Pattern Pattern `json:"pattern"`
+	Name        string   `json:"name"`
+	Pattern     Pattern  `json:"pattern"`
+	Args        []string `json:"args"`
+	Description string   `json:"description"`
 }
 
 // HTTPHandlerPing Handles GET requests to /ping.
@@ -85,7 +87,8 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 			})
 		}
 
-		job := NewJob(data.Name, data.Pattern)
+		job := NewJob(data.Name, data.Pattern, data.Args)
+		job.Description = data.Description
 		nexts, err := r.AddJob(*job)
 
 		if err != nil {

@@ -8,7 +8,7 @@ func TestAddJob(t *testing.T) {
 	runner := NewRunner()
 
 	pattern := Pattern{Occurence: "every", Second: 1}
-	job := NewJob("foobar", pattern)
+	job := NewJob("foobar", pattern, []string{})
 
 	_, err := runner.AddJob(*job)
 	if err != nil {
@@ -23,7 +23,7 @@ func TestAddJob(t *testing.T) {
 
 func TestHasJob(t *testing.T) {
 	runner := NewRunner()
-	job := NewJob("foobar", Pattern{})
+	job := NewJob("foobar", Pattern{}, []string{})
 	runner.AddJob(*job)
 	actual := runner.HasJob(job)
 
@@ -34,7 +34,7 @@ func TestHasJob(t *testing.T) {
 
 func TestRemoveJob(t *testing.T) {
 	runner := NewRunner()
-	job := NewJob("foobar", Pattern{})
+	job := NewJob("foobar", Pattern{}, []string{})
 
 	_, err := runner.AddJob(*job)
 	if err != nil {

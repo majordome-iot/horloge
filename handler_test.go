@@ -97,7 +97,7 @@ func TestHTTPHandlerHealthCheck(t *testing.T) {
 
 func TestHTTPHandlerRegisterJobEmptyBody(t *testing.T) {
 	runner := NewRunner()
-	req := request(echo.POST, "/job", "")
+	req := request(echo.POST, "/jobs", "")
 	rec := httptest.NewRecorder()
 
 	e := echo.New()
@@ -127,7 +127,7 @@ func TestHTTPHandlerRegisterJobEmptyBody(t *testing.T) {
 
 func TestHTTPHandlerRegisterJobMissingPArams(t *testing.T) {
 	runner := NewRunner()
-	req := request(echo.POST, "/job", "{\"foo\": \"bar\"}")
+	req := request(echo.POST, "/jobs", "{\"foo\": \"bar\"}")
 	rec := httptest.NewRecorder()
 
 	e := echo.New()
@@ -159,7 +159,7 @@ func TestHTTPHandlerRegisterJob(t *testing.T) {
 	runner := NewRunner()
 	jobName := "Test"
 	body := fmt.Sprintf("{\"name\":\"%s\",\"pattern\":{\"occurence\":\"every\",\"minute\":2}}", jobName)
-	req := request(echo.POST, "/job", body)
+	req := request(echo.POST, "/jobs", body)
 	rec := httptest.NewRecorder()
 
 	e := echo.New()
@@ -191,8 +191,8 @@ func TestHTTPHandlerRegisterJobConflict(t *testing.T) {
 	runner := NewRunner()
 	jobName := "Test"
 	body := fmt.Sprintf("{\"name\":\"%s\",\"pattern\":{\"occurence\":\"every\",\"minute\":2}}", jobName)
-	req := request(echo.POST, "/job", body)
-	req2 := request(echo.POST, "/job", body)
+	req := request(echo.POST, "/jobs", body)
+	req2 := request(echo.POST, "/jobs", body)
 	rec := httptest.NewRecorder()
 	rec2 := httptest.NewRecorder()
 
