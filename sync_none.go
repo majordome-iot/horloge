@@ -3,6 +3,10 @@ package horloge
 type SyncNone struct {
 }
 
+func NewSyncNone() *SyncNone {
+	return &SyncNone{}
+}
+
 func (s *SyncNone) Read() []Job {
 	return nil
 }

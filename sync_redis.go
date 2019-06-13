@@ -9,20 +9,30 @@ import (
 const HORLOGE_KEY = "horloge_jobs"
 
 type SyncRedis struct {
+	Client   *redis.Client
+	runner   *Runner
 	Addr     string
 	Password string
 	DB       int
 }
 
-func (s *SyncRedis) Read() []Job {
-	var jobs []Job
+func NewSyncRedis(runner *Runner, addr string, password string, db int) *SyncRedis {
 	client := redis.NewClient(&redis.Options{
-		Addr:     s.Addr,
-		Password: s.Password,
-		DB:       s.DB,
+		Addr:     addr,
+		Password: password,
+		DB:       db,
 	})
 
-	value := client.Get(HORLOGE_KEY)
+	return &SyncRedis{
+		Client: client,
+		runner: runner,
+	}
+}
+
+func (s *SyncRedis) Read() []Job {
+	var jobs []Job
+
+	value := s.Client.Get(HORLOGE_KEY)
 
 	if value.Err() != nil {
 		panic(value.Err())
@@ -39,13 +49,7 @@ func (s *SyncRedis) Read() []Job {
 }
 
 func (s *SyncRedis) Write(jobs []*Job) error {
-	client := redis.NewClient(&redis.Options{
-		Addr:     s.Addr,
-		Password: s.Password,
-		DB:       s.DB,
-	})
-
-	slice := make([]*Job, 0)
+	var slice []*Job
 
 	for _, job := range jobs {
 		slice = append(slice, job)
@@ -57,7 +61,7 @@ func (s *SyncRedis) Write(jobs []*Job) error {
 		return err
 	}
 
-	err = client.Set(HORLOGE_KEY, data, 0).Err()
+	err = s.Client.Set(HORLOGE_KEY, data, 0).Err()
 	if err != nil {
 		return err
 	}

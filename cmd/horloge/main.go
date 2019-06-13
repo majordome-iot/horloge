@@ -2,30 +2,20 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/codegangsta/cli"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/majordome-iot/horloge"
-	melody "gopkg.in/olahol/melody.v1"
 )
-
-type Event struct {
-	Name string
-	Args []string
-	Time time.Time
-}
 
 func server(addr string, runner *horloge.Runner) {
 	e := echo.New()
-	m := melody.New()
 
 	e.HideBanner = true
 	// Middleware
@@ -40,26 +30,6 @@ func server(addr string, runner *horloge.Runner) {
 	e.GET("/jobs", horloge.HTTPHandlerListJobs(runner))
 	e.GET("/jobs/:id", horloge.HTTPHandlerJobDetail(runner))
 	e.DELETE("/jobs/:id", horloge.HTTPHandlerDeleteJob(runner))
-	e.GET("/ws", func(c echo.Context) error {
-		m.HandleRequest(c.Response().Writer, c.Request())
-		return nil
-	})
-
-	runner.AddHandler("*", func(arguments ...interface{}) {
-		name, args, t := horloge.JobArgs(arguments)
-		event := Event{
-			Name: name,
-			Args: args,
-			Time: t,
-		}
-		b, err := json.Marshal(event)
-		if err != nil {
-			// TODO: Do better here
-			m.Broadcast([]byte("Fail"))
-		} else {
-			m.Broadcast(b)
-		}
-	})
 
 	go func() {
 		fmt.Printf("🕒 Horloge v%s\n", horloge.Version)
@@ -76,28 +46,23 @@ func server(addr string, runner *horloge.Runner) {
 	e.Shutdown(context.Background())
 }
 
-func sync(c *cli.Context) horloge.Sync {
+func sync(c *cli.Context, runner *horloge.Runner) horloge.Sync {
 	switch s := c.String("sync"); s {
 	case "redis":
 		addr := c.String("redis-addr")
 		db := c.Int("redis-db")
+		passwd := c.String("redis-passwd")
 		fmt.Printf("Syncing with redis %s with db %d \n", addr, db)
 
-		return &horloge.SyncRedis{
-			Addr:     addr,
-			Password: c.String("redis-passwd"),
-			DB:       db,
-		}
+		return horloge.NewSyncRedis(runner, addr, passwd, db)
 	case "file":
 		path := c.String("file-path")
 		fmt.Printf("Syncing with file: %s\n", path)
 
-		return &horloge.SyncDisk{
-			Path: path,
-		}
+		return horloge.NewSyncDisk(runner, path)
 	default:
 		fmt.Println("No sync")
-		return &horloge.SyncNone{}
+		return horloge.NewSyncNone()
 	}
 }
 
@@ -156,9 +121,9 @@ func main() {
 
 	app.Action = func(c *cli.Context) error {
 		bindTo := bind(c)
-		sync := sync(c)
 
 		runner := horloge.NewRunner()
+		sync := sync(c, runner)
 		runner.Sync(sync)
 
 		server(bindTo, runner)

@@ -1,5 +1,7 @@
 package horloge
 
+const PUBSUB_CHANNEL = "horloge"
+
 type Sync interface {
 	Write([]*Job) error
 	Read() []Job

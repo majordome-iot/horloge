@@ -7,7 +7,15 @@ import (
 )
 
 type SyncDisk struct {
-	Path string
+	Path   string
+	Runner *Runner
+}
+
+func NewSyncDisk(runner *Runner, path string) *SyncDisk {
+	return &SyncDisk{
+		Path:   path,
+		Runner: runner,
+	}
 }
 
 func (s *SyncDisk) Read() []Job {
