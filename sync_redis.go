@@ -2,6 +2,7 @@ package horloge
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -16,11 +17,36 @@ type SyncRedis struct {
 	DB       int
 }
 
+type Event struct {
+	Name string    `json:"name"`
+	Args []string  `json:"args"`
+	Time time.Time `json:"time"`
+}
+
 func NewSyncRedis(runner *Runner, addr string, password string, db int) *SyncRedis {
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       db,
+	})
+
+	runner.AddHandler("*", func(arguments ...interface{}) {
+		name, args, time := JobArgs(arguments)
+		data, err := json.Marshal(Event{
+			name,
+			args,
+			time,
+		})
+
+		if err != nil {
+			panic(err)
+		}
+
+		err = client.Publish(PUBSUB_CHANNEL, string(data)).Err()
+
+		if err != nil {
+			panic(err)
+		}
 	})
 
 	return &SyncRedis{
