@@ -33,9 +33,10 @@ func (s *SyncRedis) Read() []Job {
 	var jobs []Job
 
 	value := s.Client.Get(HORLOGE_KEY)
+	err := value.Err()
 
-	if value.Err() != nil {
-		panic(value.Err())
+	if err != redis.Nil && err != nil {
+		panic(err)
 	}
 
 	data := []byte(value.Val())
