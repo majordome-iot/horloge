@@ -34,7 +34,6 @@ func server(addr string, runner *horloge.Runner) {
 	go func() {
 		fmt.Printf("🕒 Horloge v%s\n", horloge.Version)
 		fmt.Printf("Http server powered by Echo v%s\n", echo.Version)
-		fmt.Printf("Websocket server powered by Melody\n")
 		e.Logger.Fatal(e.Start(addr))
 	}()
 
