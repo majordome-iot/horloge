@@ -48,9 +48,7 @@ func server(addr string, runner *horloge.Runner) {
 func sync(c *cli.Context, runner *horloge.Runner) horloge.Sync {
 	switch s := c.String("sync"); s {
 	case "redis":
-		addr := c.String("redis-addr")
-		db := c.Int("redis-db")
-		passwd := c.String("redis-passwd")
+		addr, db, passwd := c.String("redis-addr"), c.Int("redis-db"), c.String("redis-passwd")
 		fmt.Printf("Syncing with redis %s with db %d \n", addr, db)
 
 		return horloge.NewSyncRedis(runner, addr, passwd, db)
@@ -63,10 +61,6 @@ func sync(c *cli.Context, runner *horloge.Runner) horloge.Sync {
 		fmt.Println("No sync")
 		return horloge.NewSyncNone()
 	}
-}
-
-func bind(c *cli.Context) string {
-	return fmt.Sprintf("%s:%d", c.String("bind"), c.Int("port"))
 }
 
 func main() {
@@ -119,13 +113,11 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
-		bindTo := bind(c)
-
 		runner := horloge.NewRunner()
-		sync := sync(c, runner)
-		runner.Sync(sync)
+		runner.Sync(sync(c, runner))
+		addr := fmt.Sprintf("%s:%d", c.String("bind"), c.Int("port"))
 
-		server(bindTo, runner)
+		server(addr, runner)
 
 		return nil
 	}
