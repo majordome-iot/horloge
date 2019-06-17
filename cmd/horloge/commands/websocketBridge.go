@@ -24,6 +24,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/majordome-iot/horloge"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var websocketBridgeCmd = &cobra.Command{
@@ -34,21 +35,16 @@ and forwards each message it receives.
 Use / with a Websocket client to receive messages.
 Use /ping to receive a pong response.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		redisAddr, _ := rootCmd.PersistentFlags().GetString("redis-addr")
-		redisPasswd, _ := rootCmd.PersistentFlags().GetString("redis-passwd")
-		redisDb, _ := rootCmd.PersistentFlags().GetInt("redis-db")
-		bind, _ := cmd.Flags().GetString("bind")
+		bind := viper.GetString("websocket.bind")
+		port := viper.GetInt("websocket.port")
+		addr := fmt.Sprintf("%s:%d", bind, port)
 
-		fmt.Printf("Connecting to redis server at %s on database %d...\n", redisAddr, redisDb)
+		fmt.Printf("Connecting to redis server at %s on database %d...\n", redisAddr, redisDB)
 		fmt.Printf("Websocket server listening on %s...\n", bind)
 
 		httpServer := horloge.NewWebsocketServer()
-		redisClient := horloge.NewRedisClient(redisAddr, redisPasswd, redisDb)
+		redisClient := horloge.NewRedisClient(redisAddr, redisPasswd, redisDB)
 		signalChan := make(chan os.Signal, 1)
-
-		redisClient.AddPublishHandler(func(msg *redis.Message) {
-			httpServer.Publish(msg.Payload)
-		})
 
 		redisClient.AddPublishHandler(func(msg *redis.Message) {
 			httpServer.Publish(msg.Payload)
@@ -56,7 +52,7 @@ Use /ping to receive a pong response.`,
 
 		go redisClient.Wait()
 
-		httpServer.Run(bind)
+		httpServer.Run(addr)
 		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 		<-signalChan
 	},
@@ -64,5 +60,10 @@ Use /ping to receive a pong response.`,
 
 func init() {
 	rootCmd.AddCommand(websocketBridgeCmd)
-	websocketBridgeCmd.Flags().StringP("bind", "b", ":5000", "address on which the websocket server should listen to")
+
+	websocketBridgeCmd.Flags().StringP("bind", "b", "127.0.0.1", "Addr to listen to")
+	websocketBridgeCmd.Flags().IntP("port", "p", 5000, "Port to listen to")
+
+	viper.BindPFlag("websocket.bind", websocketBridgeCmd.Flags().Lookup("bind"))
+	viper.BindPFlag("websocket.port", websocketBridgeCmd.Flags().Lookup("port"))
 }

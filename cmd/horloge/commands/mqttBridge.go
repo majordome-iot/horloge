@@ -24,24 +24,22 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/majordome-iot/horloge"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var mqttBridgeCmd = &cobra.Command{
 	Use:   "mqtt-bridge",
 	Short: "A bridge between redis and a mqtt broker",
 	Long: `Creates a bridge that subscribes to horloge/job on redis
-and forwards each message to the configured mqtt broker`,
+and forwards messages to the configured mqtt broker`,
 	Run: func(cmd *cobra.Command, args []string) {
-		redisAddr, _ := rootCmd.PersistentFlags().GetString("redis-addr")
-		redisPasswd, _ := rootCmd.PersistentFlags().GetString("redis-passwd")
-		redisDb, _ := rootCmd.PersistentFlags().GetInt("redis-db")
-		mqttAddr, _ := cmd.Flags().GetString("mqtt-addr")
+		mqttAddr := viper.GetString("mqtt.addr")
 
-		fmt.Printf("Connecting to redis server at %s on database %d...\n", redisAddr, redisDb)
+		fmt.Printf("Connecting to redis server at %s on database %d...\n", redisAddr, redisDB)
 		fmt.Printf("Connecting to mqtt broker at %s...\n", mqttAddr)
 
 		mqttClient := horloge.NewMQTTClient(mqttAddr)
-		redisClient := horloge.NewRedisClient(redisAddr, redisPasswd, redisDb)
+		redisClient := horloge.NewRedisClient(redisAddr, redisPasswd, redisDB)
 		signalChan := make(chan os.Signal, 1)
 
 		redisClient.AddPublishHandler(func(msg *redis.Message) {
@@ -57,5 +55,8 @@ and forwards each message to the configured mqtt broker`,
 
 func init() {
 	rootCmd.AddCommand(mqttBridgeCmd)
+
 	mqttBridgeCmd.Flags().String("mqtt-addr", "tcp://localhost:1883", "address of the mqtt broker")
+
+	viper.BindPFlag("mqtt.addr", mqttBridgeCmd.Flags().Lookup("mqtt-addr"))
 }

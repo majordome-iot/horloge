@@ -28,13 +28,9 @@ import (
 
 var runner *horloge.Runner
 var cfgFile string
-var bind string
-var port int
-var sync string
 var redisPasswd string
 var redisAddr string
-var redisDb int
-var filePath string
+var redisDB int
 
 var rootCmd = &cobra.Command{
 	Use:   "horloge",
@@ -55,8 +51,12 @@ func init() {
 
 	// sync redis options
 	rootCmd.PersistentFlags().StringVar(&redisAddr, "redis-addr", ":6379", "address of the redis server")
-	rootCmd.PersistentFlags().StringVar(&redisPasswd, "redis-passw", "", "password of the redis server")
-	rootCmd.PersistentFlags().IntVar(&redisDb, "redis-db", 0, "which database to use")
+	rootCmd.PersistentFlags().StringVar(&redisPasswd, "redis-passwd", "", "password of the redis server")
+	rootCmd.PersistentFlags().IntVar(&redisDB, "redis-db", 0, "which database to use")
+
+	viper.BindPFlag("redis.addr", rootCmd.PersistentFlags().Lookup("redis-addr"))
+	viper.BindPFlag("redis.password", rootCmd.PersistentFlags().Lookup("redis-passwd"))
+	viper.BindPFlag("redis.db", rootCmd.PersistentFlags().Lookup("redis-db"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -76,6 +76,8 @@ func initConfig() {
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".horloge")
 	}
+
+	viper.SetConfigType("yaml")
 
 	viper.AutomaticEnv() // read in environment variables that match
 

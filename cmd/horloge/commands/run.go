@@ -26,7 +26,12 @@ import (
 	"github.com/labstack/echo/middleware"
 	"github.com/majordome-iot/horloge"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var bind string
+var port int
+var sync string
 
 func getServer() *echo.Echo {
 	e := echo.New()
@@ -48,29 +53,22 @@ func getServer() *echo.Echo {
 	return e
 }
 
-func getSync() horloge.Sync {
-	switch s := sync; s {
-	case "redis":
-		fmt.Printf("Syncing with redis %s with db %d \n", redisAddr, redisDb)
-
-		return horloge.NewSyncRedis(runner, redisAddr, redisPasswd, redisDb)
-	case "file":
-		fmt.Printf("Syncing with file: %s\n", filePath)
-
-		return horloge.NewSyncDisk(runner, filePath)
-	default:
-		fmt.Println("No sync")
-		return horloge.NewSyncNone()
-	}
-}
-
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Creates an horloge runner with a web interface",
-	Long:  `Something`,
+	Short: "Runs an horloge runner with a web interface",
+	Long: `Starts a web API with the following routes:
+
+GET /jobs returns a list of jobs
+POST /jobs creates a new job
+GET /jobs/{id} returns job with id {id}
+DELETE /jobs/{id} delets job with id {id}`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runner = horloge.NewRunner()
-		runner.Sync(getSync())
+
+		if sync != "" {
+			runner.Sync(horloge.NewSyncRedis(runner, redisAddr, redisPasswd, redisDB))
+		}
+
 		e := getServer()
 
 		go func() {
@@ -93,12 +91,11 @@ var runCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(runCmd)
 
-	runCmd.Flags().StringVarP(&bind, "bind", "b", "127.0.0.1", "Bind to")
-	runCmd.Flags().IntVarP(&port, "port", "p", 6432, "Port to listen to")
+	runCmd.Flags().StringVarP(&bind, "bind", "b", "127.0.0.1", "Addr to listen to")
+	runCmd.Flags().IntVarP(&port, "port", "p", 6432, "Port to listen on")
+	runCmd.Flags().StringVarP(&sync, "sync", "s", "", "Sync method to use")
 
-	// sync options
-	runCmd.Flags().StringVarP(&sync, "sync", "s", "none", "Sync method to use")
-
-	// sync file options
-	runCmd.Flags().StringVar(&filePath, "file-path", "./horloge.json", "File path to sync to (used with `file` sync)")
+	viper.BindPFlag("run.bind", mqttBridgeCmd.Flags().Lookup("bind"))
+	viper.BindPFlag("run.port", mqttBridgeCmd.Flags().Lookup("port"))
+	viper.BindPFlag("run.sync", mqttBridgeCmd.Flags().Lookup("sync"))
 }
