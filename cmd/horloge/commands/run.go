@@ -16,14 +16,12 @@ limitations under the License.
 package commands
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/gin-gonic/gin"
 	"github.com/majordome-iot/horloge"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,24 +31,19 @@ var bind string
 var port int
 var sync string
 
-func getServer() *echo.Echo {
-	e := echo.New()
-
-	e.HideBanner = true
-	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+func getServer() *gin.Engine {
+	r := gin.Default()
 
 	// Routes
-	e.GET("/ping", horloge.HTTPHandlerPing())
-	e.GET("/health_check", horloge.HTTPHandlerHealthCheck())
-	e.GET("/version", horloge.HTTPHandlerVersion())
-	e.POST("/jobs", horloge.HTTPHandlerRegisterJob(runner))
-	e.GET("/jobs", horloge.HTTPHandlerListJobs(runner))
-	e.GET("/jobs/:id", horloge.HTTPHandlerJobDetail(runner))
-	e.DELETE("/jobs/:id", horloge.HTTPHandlerDeleteJob(runner))
+	r.GET("/ping", horloge.HTTPHandlerPing())
+	r.GET("/health_check", horloge.HTTPHandlerHealthCheck())
+	r.GET("/version", horloge.HTTPHandlerVersion())
+	r.POST("/jobs", horloge.HTTPHandlerRegisterJob(runner))
+	r.GET("/jobs", horloge.HTTPHandlerListJobs(runner))
+	r.GET("/jobs/:id", horloge.HTTPHandlerJobDetail(runner))
+	r.DELETE("/jobs/:id", horloge.HTTPHandlerDeleteJob(runner))
 
-	return e
+	return r
 }
 
 var runCmd = &cobra.Command{
@@ -69,13 +62,13 @@ DELETE /jobs/{id} delets job with id {id}`,
 			runner.Sync(horloge.NewSyncRedis(runner, redisAddr, redisPasswd, redisDB))
 		}
 
-		e := getServer()
+		r := getServer()
 
 		go func() {
 			addr := fmt.Sprintf("%s:%d", bind, port)
 			fmt.Printf("🕒 Horloge v%s\n", horloge.Version)
-			fmt.Printf("Http server powered by Echo v%s\n", echo.Version)
-			e.Logger.Fatal(e.Start(addr))
+			fmt.Printf("Http server powered by Gin %s\n", gin.Version)
+			r.Run(addr)
 		}()
 
 		signalChan := make(chan os.Signal, 1)
@@ -83,8 +76,6 @@ DELETE /jobs/{id} delets job with id {id}`,
 		<-signalChan
 
 		fmt.Println("Shutdown signal received, exiting...")
-		e.Shutdown(context.Background())
-
 	},
 }
 

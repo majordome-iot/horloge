@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,18 +34,18 @@ type jobRegistrationMessage struct {
 // HTTPHandlerPing Handles GET requests to /ping.
 //
 // Replies with pong.
-func HTTPHandlerPing() func(c echo.Context) error {
-	return func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"message": "pong"})
+func HTTPHandlerPing() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, map[string]string{"message": "pong"})
 	}
 }
 
 // HTTPHandlerVersion Handles GET requests to /version.
 //
 // Replies with project version
-func HTTPHandlerVersion() func(c echo.Context) error {
-	return func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"version": Version})
+func HTTPHandlerVersion() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, map[string]string{"version": Version})
 	}
 }
 
@@ -53,9 +53,9 @@ func HTTPHandlerVersion() func(c echo.Context) error {
 //
 // Replies an empty string and status code 200. This is useful if you want
 // to monitor the state of the application.
-func HTTPHandlerHealthCheck() func(c echo.Context) error {
-	return func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"message": "ok"})
+func HTTPHandlerHealthCheck() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, map[string]string{"message": "ok"})
 	}
 }
 
@@ -63,28 +63,31 @@ func HTTPHandlerHealthCheck() func(c echo.Context) error {
 //
 // To add a job you must send a request to /jobs with a json body
 //
-func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
-	return func(c echo.Context) error {
+func HTTPHandlerRegisterJob(r *Runner) func(c *gin.Context) {
+	return func(c *gin.Context) {
 		var data = jobRegistrationMessage{}
 
 		if err := c.Bind(&data); err != nil {
 			r.log.WithFields(logrus.Fields{
 				"code": 400,
 			}).Error(string(err.Error()))
-			return c.JSON(http.StatusBadRequest, JSONMessage{
+			c.JSON(http.StatusBadRequest, JSONMessage{
 				Message: "bad request",
 				Details: MalformedMessage,
 			})
+			return
 		}
 
 		if data.Name == "" || data.Pattern.IsZero() {
 			r.log.WithFields(logrus.Fields{
 				"code": 400,
 			}).Error(InvalidJobRequestBody)
-			return c.JSON(http.StatusBadRequest, JSONMessage{
+
+			c.JSON(http.StatusBadRequest, JSONMessage{
 				Message: "bad request",
 				Details: InvalidJobRequestBody,
 			})
+			return
 		}
 
 		job := NewJob(data.Name, data.Pattern, data.Args)
@@ -95,13 +98,14 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 			r.log.WithFields(logrus.Fields{
 				"code": 409,
 			}).Error(err)
-			return c.JSON(http.StatusConflict, JSONMessage{
+			c.JSON(http.StatusConflict, JSONMessage{
 				Message: "conflict",
 				Details: err.Error(),
 			})
+			return
 		}
 
-		return c.JSON(http.StatusAccepted, JobScheduledMessage{
+		c.JSON(http.StatusAccepted, JobScheduledMessage{
 			Name:  data.Name,
 			Nexts: nexts,
 		})
@@ -109,51 +113,50 @@ func HTTPHandlerRegisterJob(r *Runner) func(c echo.Context) error {
 }
 
 // HTTPHandlerJobDetail Show job detail
-func HTTPHandlerJobDetail(r *Runner) func(c echo.Context) error {
-	return func(c echo.Context) error {
+func HTTPHandlerJobDetail(r *Runner) func(c *gin.Context) {
+	return func(c *gin.Context) {
 		name := c.Param("id")
 		job := r.GetJob(name)
 
 		if job == nil {
-			return c.JSON(http.StatusNotFound, JSONMessage{
+			c.JSON(http.StatusNotFound, JSONMessage{
 				Message: "not found",
 				Details: "Job with name `" + name + "` does not exist",
 			})
 		}
 
-		return c.JSON(http.StatusOK, job)
+		c.JSON(http.StatusOK, job)
 	}
 }
 
 // HTTPHandlerDeleteJob Delete a job
-func HTTPHandlerDeleteJob(r *Runner) func(c echo.Context) error {
-	return func(c echo.Context) error {
+func HTTPHandlerDeleteJob(r *Runner) func(c *gin.Context) {
+	return func(c *gin.Context) {
 		name := c.Param("id")
 		job := r.GetJob(name)
 
 		if job == nil {
-			return c.JSON(http.StatusNotFound, JSONMessage{
+			c.JSON(http.StatusNotFound, JSONMessage{
 				Message: "not found",
 				Details: "Job with name " + name + "does not exist",
 			})
 		}
 
 		r.RemoveJob(job)
-
-		return c.NoContent(http.StatusNoContent)
+		c.JSON(http.StatusNoContent, nil)
 	}
 }
 
 // HTTPHandlerListJobs List Jobs
-func HTTPHandlerListJobs(r *Runner) func(c echo.Context) error {
-	return func(c echo.Context) error {
+func HTTPHandlerListJobs(r *Runner) func(c *gin.Context) {
+	return func(c *gin.Context) {
 		jobs, err := r.ToJSON()
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, JSONMessage{
+			c.JSON(http.StatusInternalServerError, JSONMessage{
 				Message: "internal server error",
 				Details: UnableToSerializeJobs,
 			})
 		}
-		return c.JSON(http.StatusOK, jobs)
+		c.JSON(http.StatusOK, jobs)
 	}
 }

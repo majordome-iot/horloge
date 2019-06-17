@@ -9,22 +9,21 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
 )
 
 func request(method, path, data string) *http.Request {
 	req := httptest.NewRequest(method, path, strings.NewReader(data))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	req.Header.Set("Content-Type", "application/json")
 
 	return req
 }
 
 func TestHTTPHandlerPing(t *testing.T) {
-	req := request(echo.GET, "/ping", "")
 	rec := httptest.NewRecorder()
 
-	e := echo.New()
-	context := e.NewContext(req, rec)
+	context, _ := gin.CreateTestContext(rec)
+	context.Request = request("GET", "/ping", "")
 
 	fn := HTTPHandlerPing()
 	fn(context)
@@ -37,19 +36,18 @@ func TestHTTPHandlerPing(t *testing.T) {
 	}
 
 	expectedBody := bytes.NewBufferString("{\"message\":\"pong\"}")
-	actualBody := rec.Body
+	actualBody := strings.TrimSpace(rec.Body.String())
 
-	if expectedBody.String() != actualBody.String() {
-		t.Errorf("expected body to be %s, got %s", expectedBody, actualBody)
+	if expectedBody.String() != actualBody {
+		t.Errorf("expected body to be `%s`, got `%s`", expectedBody, actualBody)
 	}
 }
 
 func TestHTTPHandlerVersion(t *testing.T) {
-	req := request(echo.GET, "/version", "")
 	rec := httptest.NewRecorder()
 
-	e := echo.New()
-	context := e.NewContext(req, rec)
+	context, _ := gin.CreateTestContext(rec)
+	context.Request = request("GET", "/version", "")
 
 	fn := HTTPHandlerVersion()
 	fn(context)
@@ -63,19 +61,18 @@ func TestHTTPHandlerVersion(t *testing.T) {
 
 	message, _ := json.Marshal(map[string]string{"version": Version})
 	expectedBody := bytes.NewBuffer(message)
-	actualBody := rec.Body
+	actualBody := strings.TrimSpace(rec.Body.String())
 
-	if expectedBody.String() != actualBody.String() {
+	if expectedBody.String() != actualBody {
 		t.Errorf("expected body to be %s, got %s", expectedBody, actualBody)
 	}
 }
 
 func TestHTTPHandlerHealthCheck(t *testing.T) {
-	req := request(echo.GET, "/health_check", "")
 	rec := httptest.NewRecorder()
 
-	e := echo.New()
-	context := e.NewContext(req, rec)
+	context, _ := gin.CreateTestContext(rec)
+	context.Request = request("GET", "/health_check", "")
 
 	fn := HTTPHandlerHealthCheck()
 	fn(context)
@@ -88,20 +85,19 @@ func TestHTTPHandlerHealthCheck(t *testing.T) {
 	}
 
 	expectedBody := bytes.NewBufferString("{\"message\":\"ok\"}")
-	actualBody := rec.Body
+	actualBody := strings.TrimSpace(rec.Body.String())
 
-	if expectedBody.String() != actualBody.String() {
+	if expectedBody.String() != actualBody {
 		t.Errorf("expected body to be %s, got %s", expectedBody, actualBody)
 	}
 }
 
 func TestHTTPHandlerRegisterJobEmptyBody(t *testing.T) {
 	runner := NewRunner()
-	req := request(echo.POST, "/jobs", "")
 	rec := httptest.NewRecorder()
 
-	e := echo.New()
-	context := e.NewContext(req, rec)
+	context, _ := gin.CreateTestContext(rec)
+	context.Request = request("POST", "/jobs", "")
 
 	fn := HTTPHandlerRegisterJob(runner)
 	fn(context)
@@ -125,13 +121,12 @@ func TestHTTPHandlerRegisterJobEmptyBody(t *testing.T) {
 	}
 }
 
-func TestHTTPHandlerRegisterJobMissingPArams(t *testing.T) {
+func TestHTTPHandlerRegisterJobMissingParams(t *testing.T) {
 	runner := NewRunner()
-	req := request(echo.POST, "/jobs", "{\"foo\": \"bar\"}")
 	rec := httptest.NewRecorder()
 
-	e := echo.New()
-	context := e.NewContext(req, rec)
+	context, _ := gin.CreateTestContext(rec)
+	context.Request = request("POST", "/jobs", "{\"foo\": \"bar\"}")
 
 	fn := HTTPHandlerRegisterJob(runner)
 	fn(context)
@@ -159,11 +154,10 @@ func TestHTTPHandlerRegisterJob(t *testing.T) {
 	runner := NewRunner()
 	jobName := "Test"
 	body := fmt.Sprintf("{\"name\":\"%s\",\"pattern\":{\"occurence\":\"every\",\"minute\":2}}", jobName)
-	req := request(echo.POST, "/jobs", body)
 	rec := httptest.NewRecorder()
 
-	e := echo.New()
-	context := e.NewContext(req, rec)
+	context, _ := gin.CreateTestContext(rec)
+	context.Request = request("POST", "/jobs", body)
 
 	fn := HTTPHandlerRegisterJob(runner)
 	fn(context)
@@ -191,14 +185,14 @@ func TestHTTPHandlerRegisterJobConflict(t *testing.T) {
 	runner := NewRunner()
 	jobName := "Test"
 	body := fmt.Sprintf("{\"name\":\"%s\",\"pattern\":{\"occurence\":\"every\",\"minute\":2}}", jobName)
-	req := request(echo.POST, "/jobs", body)
-	req2 := request(echo.POST, "/jobs", body)
 	rec := httptest.NewRecorder()
 	rec2 := httptest.NewRecorder()
 
-	e := echo.New()
-	context := e.NewContext(req, rec)
-	context2 := e.NewContext(req2, rec2)
+	context, _ := gin.CreateTestContext(rec)
+	context2, _ := gin.CreateTestContext(rec2)
+
+	context.Request = request("POST", "/jobs", body)
+	context2.Request = request("POST", "/jobs", body)
 
 	fn := HTTPHandlerRegisterJob(runner)
 	fn(context)
@@ -212,6 +206,7 @@ func TestHTTPHandlerRegisterJobConflict(t *testing.T) {
 	}
 
 	var message = &JSONMessage{}
+	fmt.Println(rec2.Body.String())
 	err := json.Unmarshal(rec2.Body.Bytes(), message)
 
 	if err != nil {
