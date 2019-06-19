@@ -1,5 +1,5 @@
 /*
-Copyright © 2019 NAME HERE <EMAIL ADDRESS>
+Copyright © 2019 Samori Gorse <samorigorse+github@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,21 +31,6 @@ var bind string
 var port int
 var sync string
 
-func getServer() *gin.Engine {
-	r := gin.Default()
-
-	// Routes
-	r.GET("/ping", horloge.HTTPHandlerPing())
-	r.GET("/health_check", horloge.HTTPHandlerHealthCheck())
-	r.GET("/version", horloge.HTTPHandlerVersion())
-	r.POST("/jobs", horloge.HTTPHandlerRegisterJob(runner))
-	r.GET("/jobs", horloge.HTTPHandlerListJobs(runner))
-	r.GET("/jobs/:id", horloge.HTTPHandlerJobDetail(runner))
-	r.DELETE("/jobs/:id", horloge.HTTPHandlerDeleteJob(runner))
-
-	return r
-}
-
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Runs an horloge runner with a web interface",
@@ -62,7 +47,16 @@ DELETE /jobs/{id} delets job with id {id}`,
 			runner.Sync(horloge.NewSyncRedis(runner, redisAddr, redisPasswd, redisDB))
 		}
 
-		r := getServer()
+		r := gin.Default()
+
+		// Routes
+		r.GET("/ping", horloge.HTTPHandlerPing())
+		r.GET("/health_check", horloge.HTTPHandlerHealthCheck())
+		r.GET("/version", horloge.HTTPHandlerVersion())
+		r.POST("/jobs", horloge.HTTPHandlerRegisterJob(runner))
+		r.GET("/jobs", horloge.HTTPHandlerListJobs(runner))
+		r.GET("/jobs/:id", horloge.HTTPHandlerJobDetail(runner))
+		r.DELETE("/jobs/:id", horloge.HTTPHandlerDeleteJob(runner))
 
 		go func() {
 			addr := fmt.Sprintf("%s:%d", bind, port)

@@ -12,8 +12,8 @@ type Job struct {
 	tickers     []*time.Ticker
 }
 
+// NewJob Creates a new Job that will occur based on the provided pattern.
 func NewJob(name string, pattern Pattern, args []string) *Job {
-
 	return &Job{
 		Name:    name,
 		Args:    args,
@@ -21,10 +21,12 @@ func NewJob(name string, pattern Pattern, args []string) *Job {
 	}
 }
 
+// Bind Attachs arguments to a Job.
 func (j *Job) Bind(args []string) {
 	j.Args = args
 }
 
+// Repeat Returns next occurences.
 func (j *Job) Repeat() []time.Time {
 	var time []time.Time
 	p := j.Pattern
@@ -45,12 +47,14 @@ func (j *Job) Repeat() []time.Time {
 	return time
 }
 
+// Cancel Cancels a job
 func (j *Job) Cancel() {
 	for _, t := range j.tickers {
 		t.Stop()
 	}
 }
 
+// Calendar Creates a calendar of every
 func (j *Job) Calendar() []time.Time {
 	nexts := j.Repeat()
 

@@ -36,6 +36,7 @@ func NewRunner() *Runner {
 	return r
 }
 
+// ToJSON Returns a list of known jobs
 func (r *Runner) ToJSON() ([]*Job, error) {
 	s := make([]*Job, 0)
 
@@ -45,6 +46,7 @@ func (r *Runner) ToJSON() ([]*Job, error) {
 	return s, nil
 }
 
+// AddJob Registers a job.
 func (r *Runner) AddJob(job Job) ([]time.Time, error) {
 	var nexts []time.Time
 
@@ -64,6 +66,14 @@ func (r *Runner) AddJob(job Job) ([]time.Time, error) {
 	return nexts, nil
 }
 
+// AddJobs Registers a list of jobs
+func (r *Runner) AddJobs(jobs []Job) {
+	for _, job := range jobs {
+		r.AddJob(job)
+	}
+}
+
+// GetJob Returns a job with name `name`
 func (r *Runner) GetJob(name string) *Job {
 	job, ok := r.jobs[name]
 	if ok {
@@ -72,12 +82,7 @@ func (r *Runner) GetJob(name string) *Job {
 	return nil
 }
 
-func (r *Runner) AddJobs(jobs []Job) {
-	for _, job := range jobs {
-		r.AddJob(job)
-	}
-}
-
+// Emit Calls every handlers attached to `name` event.
 func (r *Runner) Emit(name string, args ...interface{}) {
 	handlers, ok := r.handlers[name]
 
@@ -88,6 +93,7 @@ func (r *Runner) Emit(name string, args ...interface{}) {
 	}
 }
 
+// Subscribe Registers an handler as a callback to `name` event.
 func (r *Runner) Subscribe(name string, f Callback) {
 	_, ok := r.handlers[name]
 
@@ -98,10 +104,12 @@ func (r *Runner) Subscribe(name string, f Callback) {
 	r.handlers[name] = append(r.handlers[name], f)
 }
 
+// AddHandler Registers a callback to job event.
 func (r *Runner) AddHandler(name string, f Callback) {
 	r.Subscribe("job:"+name, f)
 }
 
+// Schedule Schedules a job in the future
 func (r *Runner) Schedule(j Job, n time.Time, index int) {
 	contextLogger := r.log.WithFields(logrus.Fields{
 		"at":     n,
@@ -132,12 +140,14 @@ func (r *Runner) Schedule(j Job, n time.Time, index int) {
 	wg.Wait()
 }
 
+// HasJob Returns true if a Job with the same job name exists
 func (r *Runner) HasJob(job *Job) bool {
 	_, ok := r.jobs[job.Name]
 
 	return ok
 }
 
+// RemoveJob Removes and cancels job
 func (r *Runner) RemoveJob(job *Job) {
 	contextLogger := r.log.WithFields(logrus.Fields{
 		"action": "remove",
@@ -158,6 +168,7 @@ func writeSync(r *Runner, s Sync) func(...interface{}) {
 	}
 }
 
+// Sync Registers a datasource to sync to.
 func (r *Runner) Sync(s Sync) {
 	jobs := s.Read()
 	r.AddJobs(jobs)

@@ -53,6 +53,7 @@ func (p *Pattern) On(repeaters ...interface{}) *Pattern {
 	return p
 }
 
+// At Sets pattern to repeat at a specific hour
 func (p *Pattern) At(hour, minute, second int) *Pattern {
 	p.Hour = hour
 	p.Minute = minute
@@ -60,6 +61,7 @@ func (p *Pattern) At(hour, minute, second int) *Pattern {
 	return p
 }
 
+// Time Returns the attached time of the pattern, returns Now() if the Pattern is pristine
 func (p *Pattern) Time() time.Time {
 	if p.Now.IsZero() {
 		p.Now = time.Now()
@@ -68,6 +70,7 @@ func (p *Pattern) Time() time.Time {
 	return p.Now
 }
 
+// IsZero Returns true if the Pattern is pristine
 func (p *Pattern) IsZero() bool {
 	return p.Second == 0 &&
 		p.Minute == 0 &&

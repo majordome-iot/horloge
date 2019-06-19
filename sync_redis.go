@@ -9,6 +9,7 @@ import (
 
 const HORLOGE_KEY = "horloge_jobs"
 
+// SyncRedis
 type SyncRedis struct {
 	Client   *redis.Client
 	runner   *Runner
@@ -17,6 +18,7 @@ type SyncRedis struct {
 	DB       int
 }
 
+// Event Used to serialize events published in Redis
 type Event struct {
 	Name string    `json:"name"`
 	Args []string  `json:"args"`

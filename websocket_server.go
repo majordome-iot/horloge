@@ -5,12 +5,13 @@ import (
 	melody "gopkg.in/olahol/melody.v1"
 )
 
-type Server struct {
+type WebsocketServer struct {
 	websocketHandler *melody.Melody
 	httpServer       *gin.Engine
 }
 
-func NewWebsocketServer() *Server {
+// NewWebsocketServer Creates a new WebsocketServer instance
+func NewWebsocketServer() *WebsocketServer {
 	r := gin.Default()
 	m := melody.New()
 
@@ -22,16 +23,18 @@ func NewWebsocketServer() *Server {
 		c.Data(200, "text/plain", []byte("pong"))
 	})
 
-	return &Server{
+	return &WebsocketServer{
 		websocketHandler: m,
 		httpServer:       r,
 	}
 }
 
-func (s *Server) Publish(message string) {
+// Publish Emits a message on the websocket connection
+func (s *WebsocketServer) Publish(message string) {
 	s.websocketHandler.Broadcast([]byte(message))
 }
 
-func (s *Server) Run(addr string) {
+// Run Runs the server
+func (s *WebsocketServer) Run(addr string) {
 	s.httpServer.Run(addr)
 }
