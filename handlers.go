@@ -17,6 +17,12 @@ const (
 	UnableToSerializeJobs string = "Unable to serialize jobs"
 )
 
+type JSONMessage struct {
+	Message string `json:"message"`
+	Details string `json:"details"`
+}
+
+
 // JSONErrorMessage Used to detail an error
 type JSONErrorMessage struct {
 	Message string `json:"message"`

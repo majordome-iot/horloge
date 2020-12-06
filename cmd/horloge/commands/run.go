@@ -22,7 +22,7 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/majordome-iot/horloge"
+	"github.com/shinuza/horloge"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,6 +44,8 @@ DELETE /jobs/{id} delets job with id {id}`,
 		runner = horloge.NewRunner()
 
 		if sync != "" {
+			fmt.Println("Sync activated")
+			fmt.Println("Connecting to redis database at %s on db %d", redisAddr, redisDB)
 			runner.Sync(horloge.NewSyncRedis(runner, redisAddr, redisPasswd, redisDB))
 		}
 

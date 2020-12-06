@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/majordome-iot/horloge"
+	"github.com/shinuza/horloge"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"

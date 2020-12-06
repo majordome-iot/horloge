@@ -22,7 +22,7 @@ import (
 	"syscall"
 
 	"github.com/go-redis/redis"
-	"github.com/majordome-iot/horloge"
+	"github.com/shinuza/horloge"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

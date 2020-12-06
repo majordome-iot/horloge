@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/majordome-iot/horloge/cmd/horloge/commands"
+import "github.com/shinuza/horloge/cmd/horloge/commands"
 
 func main() {
 	commands.Execute()

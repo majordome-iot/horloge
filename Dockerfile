@@ -2,13 +2,13 @@
 FROM golang:alpine AS build-env
 RUN apk update
 RUN apk add git
-ADD . /go/src/github.com/majordome-iot/horloge
-WORKDIR /go/src/github.com/majordome-iot/horloge/
+ADD . /go/src/github.com/shinuza/horloge
+WORKDIR /go/src/github.com/shinuza/horloge/
 RUN cd ./cmd/horloge && go get
 RUN go install
 
 # final stage
-FROM alpine
-WORKDIR /app
-COPY --from=build-env /go/bin/horloge /app/
-ENTRYPOINT ["/app/horloge", "-b", "0.0.0.0"]
+# FROM scratch
+# WORKDIR /app
+# COPY --from=build-env /go/bin/horloge /app/
+ENTRYPOINT ["/go/bin/horloge"]
