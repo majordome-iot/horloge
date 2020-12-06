@@ -206,7 +206,6 @@ func TestHTTPHandlerRegisterJobConflict(t *testing.T) {
 	}
 
 	var message = &JSONMessage{}
-	fmt.Println(rec2.Body.String())
 	err := json.Unmarshal(rec2.Body.Bytes(), message)
 
 	if err != nil {
