@@ -6,11 +6,17 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 )
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
+}
 
 func request(method, path, data string) *http.Request {
 	req := httptest.NewRequest(method, path, strings.NewReader(data))
