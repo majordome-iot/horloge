@@ -28,7 +28,7 @@ func TestHTTPHandlerPing(t *testing.T) {
 	fn := HTTPHandlerPing()
 	fn(context)
 
-	expectedCode := 200
+	expectedCode := http.StatusOK
 	actualCode := rec.Code
 
 	if expectedCode != actualCode {
@@ -52,7 +52,7 @@ func TestHTTPHandlerVersion(t *testing.T) {
 	fn := HTTPHandlerVersion()
 	fn(context)
 
-	expectedCode := 200
+	expectedCode := http.StatusOK
 	actualCode := rec.Code
 
 	if expectedCode != actualCode {
@@ -77,7 +77,7 @@ func TestHTTPHandlerHealthCheck(t *testing.T) {
 	fn := HTTPHandlerHealthCheck()
 	fn(context)
 
-	expectedCode := 200
+	expectedCode := http.StatusOK
 	actualCode := rec.Code
 
 	if expectedCode != actualCode {
@@ -102,7 +102,7 @@ func TestHTTPHandlerRegisterJobEmptyBody(t *testing.T) {
 	fn := HTTPHandlerRegisterJob(runner)
 	fn(context)
 
-	expectedCode := 400
+	expectedCode := http.StatusBadRequest
 	actualCode := rec.Code
 
 	if expectedCode != actualCode {
@@ -131,7 +131,7 @@ func TestHTTPHandlerRegisterJobMissingParams(t *testing.T) {
 	fn := HTTPHandlerRegisterJob(runner)
 	fn(context)
 
-	expectedCode := 400
+	expectedCode := http.StatusBadRequest
 	actualCode := rec.Code
 
 	if expectedCode != actualCode {
@@ -162,7 +162,7 @@ func TestHTTPHandlerRegisterJob(t *testing.T) {
 	fn := HTTPHandlerRegisterJob(runner)
 	fn(context)
 
-	expectedCode := 202
+	expectedCode := http.StatusAccepted
 	actualCode := rec.Code
 
 	if expectedCode != actualCode {
@@ -198,7 +198,7 @@ func TestHTTPHandlerRegisterJobConflict(t *testing.T) {
 	fn(context)
 	fn(context2)
 
-	expectedCode := 409
+	expectedCode := http.StatusConflict
 	actualCode := rec2.Code
 
 	if expectedCode != actualCode {
