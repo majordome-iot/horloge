@@ -2,6 +2,8 @@ package horloge
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 
@@ -26,6 +28,9 @@ func JobArgs(a []interface{}) (string, []string, time.Time) {
 
 func NewRunner() *Runner {
 	log := logrus.New()
+	if os.Getenv("HORLOGE_TEST") != "" {
+		log.SetOutput(ioutil.Discard)
+	}
 
 	r := &Runner{
 		jobs:     make(map[string]*Job),

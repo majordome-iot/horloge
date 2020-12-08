@@ -15,6 +15,7 @@ import (
 
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.ReleaseMode)
+	os.Setenv("HORLOGE_TEST", "on") // Deactivate logging
 	os.Exit(m.Run())
 }
 

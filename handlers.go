@@ -12,7 +12,7 @@ const (
 	// MalformedMessage Returned when an unacceptable request is made
 	MalformedMessage string = "Malformed or empty request body"
 	// InvalidJobRequestBody Returned when tring to register a job without a pattern or a name
-	InvalidJobRequestBody string = "\"pattern\" and \"name\" must be present"
+	InvalidJobRequestBody string = "Invalid body: \"pattern\" and \"name\" must be present"
 	// UnableToSerializeJobs Returned when the server could not serialize jobs
 	UnableToSerializeJobs string = "Unable to serialize jobs"
 )
@@ -21,7 +21,6 @@ type JSONMessage struct {
 	Message string `json:"message"`
 	Details string `json:"details"`
 }
-
 
 // JSONErrorMessage Used to detail an error
 type JSONErrorMessage struct {
